@@ -23,7 +23,7 @@ app = typer.Typer(invoke_without_command=True)
 
 @app.command()
 def status():
-    "Output mounted project(s), most recent n projects"
+    "Output mounted project(s), and most recently activated projects"
 
 
 @app.command()
@@ -33,7 +33,7 @@ def active():
 
 @app.command()
 def ls():
-    "List projects that currently exist locally, and can be made active"
+    "List local projects that are ready to be made active"
 
 
 @app.command()
