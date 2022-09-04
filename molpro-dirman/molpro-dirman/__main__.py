@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import typer
+from . import print
 
 app = typer.Typer(invoke_without_command=True)
 
