@@ -1,4 +1,4 @@
-# Methods and helpers for interacting with the local filesystem
+# Methods and helpers for interacting passively with the local filesystem
 
 from pathlib import Path
 from datetime import datetime

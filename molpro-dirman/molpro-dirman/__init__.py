@@ -2,7 +2,8 @@
 import re
 
 from .config import *
-from .system import *
+from .sys_read import *
+from .sys_write import *
 
 RICH_ENABLED = None
 
@@ -23,4 +24,3 @@ def print(*args, **kwargs) -> None:
     *[re.sub("\[.*?\]","",s) for s in args],  # Strip away rich's formatting
     **kwargs
   )
-  
