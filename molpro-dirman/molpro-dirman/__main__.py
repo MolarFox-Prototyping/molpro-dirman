@@ -17,9 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import typer
+from textwrap import dedent
 
 from . import print, print_json
-from .config import prefix_definitions, serials_json
+from .config import prefix_definitions, serials_json, program_version
 from .sys_read import project_dirs
 
 app = typer.Typer(invoke_without_command=True)
@@ -27,56 +28,61 @@ app = typer.Typer(invoke_without_command=True)
 
 @app.command()
 def status():
-    "Output mounted project(s), and most recently activated projects"
+  "Output mounted project(s), and most recently activated projects"
 
 
 @app.command()
 def active():
-    "Output currently active project(s)"
+  "Output currently active project(s)"
 
 
 @app.command()
 def ls():
-    "List local projects that are ready to be made active"
-    print(project_dirs())
+  "List local projects that are ready to be made active"
+  print(project_dirs())
 
 @app.command()
 def activate():
-    "Activate a project"
+  "Activate a project"
 
 
 @app.command()
 def deactivate():
-    "Deactivate an active project"
+  "Deactivate an active project"
 
 
 @app.command()
 def create():
-    "Create a new project"
+  "Create a new project"
 
 
 @app.command()
 def about():
-    "Output some information about molpro-dirman"
+  "Output some information about molpro-dirman"
+  print(dedent(
+    f"""
+    MolarFox Prototyping: Project Directory Manager
+    [italic]Version {program_version()} - 2022[/italic]
+    """
+  ))
 
 
 @app.command()
 def prefixes(
-        verbose: bool=typer.Option(False, help="Display long descriptions for serials")
-    ):
-    "List info about serial prefixes"
-    if verbose:
-        print_json(data=serials_json())
-    else:
-        print_json(data={s: info.short for s, info in prefix_definitions().items()})
-
+    verbose: bool=typer.Option(False, help="Display long descriptions for serials")
+  ):
+  "List info about serial prefixes"
+  if verbose:
+    print_json(data=serials_json())
+  else:
+    print_json(data={s: info.short for s, info in prefix_definitions().items()})
 
 
 @app.callback(invoke_without_command=True)
 def callback(ctx: typer.Context):
-    if ctx.invoked_subcommand is None:  # Print status if no subcommand
-        status()
+  if ctx.invoked_subcommand is None:  # Print status if no subcommand
+    status()
 
 
 if __name__ == "__main__":
-    app()
+  app()
