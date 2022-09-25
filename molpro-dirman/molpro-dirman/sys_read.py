@@ -43,3 +43,17 @@ def project_dir_paths() -> list[Path]:
 def project_dirs() -> list[str]:
   "List of project directory names only"
   return extract_filenames(project_dir_paths())
+
+
+def is_valid_project_path(path: Path, project_level_only: bool=False) -> bool:
+  "Verify a path is validly within a project (or is project directory, if param set)"
+  try:
+    return (
+      path.exists() and
+      (
+        len(path.relative_to(base_project_directory()).parts) == 1 or 
+        not project_level_only
+      )
+    )
+  except ValueError:
+    return False

@@ -20,8 +20,9 @@ import typer
 from textwrap import dedent
 
 from . import print, print_json
-from .config import prefix_definitions, serials_json, program_version
+from .config import base_project_directory, prefix_definitions, serials_json, program_version
 from .sys_read import project_dirs
+from .sys_write import symlink_project
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -42,8 +43,9 @@ def ls():
   print(project_dirs())
 
 @app.command()
-def activate():
+def activate(project_name: str):
   "Activate a project"
+  symlink_project(base_project_directory() / project_name)
 
 
 @app.command()

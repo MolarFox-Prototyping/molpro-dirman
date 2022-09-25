@@ -1,12 +1,30 @@
 # Utils for interacting with local config files
 
+from operator import is_
 from pathlib import Path
 from collections import namedtuple
+
+def program_version() -> str:
+  return "0.0.2"
 
 def base_project_directory() -> Path:
   "Directory path object within which all project directories are being stored"
   return Path.home() / "Projects"
 
+
+def base_symlink_directory() -> Path:
+  "Directory path object where symlinks to active projects should be created"
+  return Path.home()
+
+
+def symlink_name(project_name: str, is_main:bool=True) -> str:
+  "Name to be used for symlink(s) - naming differs if intended as main or aux project"
+  if is_main:
+    return "current_project"
+  return f"project_{project_name}"
+
+
+# PREFIX DESCRIPTIONS
 PrefixDescription = namedtuple(
   "PrefixDescription", 
   ["short", "long"],
