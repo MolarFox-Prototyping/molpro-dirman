@@ -1,10 +1,11 @@
 # Methods and helpers for interacting passively with the local filesystem
 
-from http.client import ImproperConnectionState
+import os
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 
-from .config import base_project_directory
+from .config import base_project_directory, base_symlink_directory, main_project_symlink_name, symlink_name
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -43,6 +44,20 @@ def project_dir_paths() -> list[Path]:
 def project_dirs() -> list[str]:
   "List of project directory names only"
   return extract_filenames(project_dir_paths())
+
+
+def active_project(suppress_errors=True) -> Optional[str]:
+  "Name of currently active project, if any"
+  try:
+    return Path(
+      os.readlink(
+        base_symlink_directory() / main_project_symlink_name()
+      )
+    ).parts[-1]
+  except FileNotFoundError as e:
+    if suppress_errors: 
+      return None
+    raise e
 
 
 def is_valid_project_path(path: Path, project_level_only: bool=False) -> bool:

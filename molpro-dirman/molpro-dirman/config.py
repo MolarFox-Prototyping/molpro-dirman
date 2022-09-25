@@ -24,6 +24,10 @@ def symlink_name(project_name: str, is_main:bool=True) -> str:
   return f"project_{project_name}"
 
 
+def main_project_symlink_name() -> str:
+  return symlink_name("", is_main=True)
+
+
 # PREFIX DESCRIPTIONS
 PrefixDescription = namedtuple(
   "PrefixDescription", 
