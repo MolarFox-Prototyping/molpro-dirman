@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "molpro-dirman"
-version = "0.0.1"
+version = "0.0.2"
 description = "CLI tool for managing local project directories"
 authors = ["MolarFox <molar@molarfox.io>"]
 license = "gpl-3.0"
@@ -12,6 +12,8 @@ python = "^3.10"
 typer = "^0.6.1"
 rich = "^12.5.1"
 
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]

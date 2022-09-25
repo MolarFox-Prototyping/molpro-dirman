@@ -18,7 +18,7 @@
 
 import typer
 
-from . import print, print_json, RICH_ENABLED
+from . import print, print_json
 from .config import prefix_definitions, serials_json
 from .sys_read import project_dirs
 
@@ -68,9 +68,7 @@ def prefixes(
     if verbose:
         print_json(data=serials_json())
     else:
-        print_json(data={
-            s: info.short for s, info in prefix_definitions().items()
-        })
+        print_json(data={s: info.short for s, info in prefix_definitions().items()})
 
 
 
