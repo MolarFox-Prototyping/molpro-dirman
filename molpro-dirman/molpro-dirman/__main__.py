@@ -17,7 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import typer
-from . import print
+
+from . import print, RICH_ENABLED
+from .sys_read import project_dirs
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -35,7 +37,7 @@ def active():
 @app.command()
 def ls():
     "List local projects that are ready to be made active"
-
+    print(project_dirs())
 
 @app.command()
 def activate():
