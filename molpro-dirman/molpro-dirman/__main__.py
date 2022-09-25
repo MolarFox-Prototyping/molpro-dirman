@@ -18,7 +18,8 @@
 
 import typer
 
-from . import print, RICH_ENABLED
+from . import print, print_json, RICH_ENABLED
+from .config import prefix_definitions, serials_json
 from .sys_read import project_dirs
 
 app = typer.Typer(invoke_without_command=True)
@@ -57,6 +58,20 @@ def create():
 @app.command()
 def about():
     "Output some information about molpro-dirman"
+
+
+@app.command()
+def prefixes(
+        verbose: bool=typer.Option(False, help="Display long descriptions for serials")
+    ):
+    "List info about serial prefixes"
+    if verbose:
+        print_json(data=serials_json())
+    else:
+        print_json(data={
+            s: info.short for s, info in prefix_definitions().items()
+        })
+
 
 
 @app.callback(invoke_without_command=True)

@@ -1,7 +1,10 @@
 # Methods and helpers for interacting passively with the local filesystem
 
+from http.client import ImproperConnectionState
 from pathlib import Path
 from datetime import datetime
+
+from .config import base_project_directory
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -32,11 +35,6 @@ def last_modified(path: Path, recursively_check=True) -> datetime:
 
 
 # PROJECT DIRECTORY UTILS
-def base_project_directory() -> Path:
-  "Directory path object within which all project directories are being stored"
-  return Path.home() / "Projects"   # TODO: generalise this later
-
-
 def project_dir_paths() -> list[Path]:
   "List of path objects for every project directory"
   return ls_d(base_project_directory())
