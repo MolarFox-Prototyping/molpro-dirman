@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
-from .config import base_project_directory, base_symlink_directory, main_project_symlink_name, symlink_name
+from .config import Config
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -41,7 +41,7 @@ class Project:
   @staticmethod
   def list_paths() -> list[Path]:
     "List of path objects for every project directory"
-    return ls_d(base_project_directory())
+    return ls_d(Config.base_project_directory())
 
 
   @staticmethod
@@ -56,7 +56,7 @@ class Project:
     try:
       return Path(
         os.readlink(
-          base_symlink_directory() / main_project_symlink_name()
+          Config.base_symlink_directory() / Config.main_project_symlink_name()
         )
       ).parts[-1]
     except FileNotFoundError as e:
@@ -72,7 +72,7 @@ class Project:
       return (
         path.exists() and
         (
-          len(path.relative_to(base_project_directory()).parts) == 1 or 
+          len(path.relative_to(Config.base_project_directory()).parts) == 1 or 
           not project_level_only
         )
       )

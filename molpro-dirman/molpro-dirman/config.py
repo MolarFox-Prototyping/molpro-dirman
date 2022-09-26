@@ -13,26 +13,23 @@ def symlink_name(project_name: str, is_main:bool=True) -> str:
 
 class Config:
 
-  @property
   @staticmethod
   def version() -> str:
     return "0.0.2"
 
 
-  @property
   @staticmethod
   def base_project_directory() -> Path:
     "Directory path object within which all project directories are being stored"
     return Path.home() / "Projects"
 
 
-  @property
   @staticmethod
   def base_symlink_directory() -> Path:
     "Directory path object where symlinks to active projects should be created"
     return Path.home()
 
-
+  
   @staticmethod
   def main_project_symlink_name() -> str:
     return symlink_name("", is_main=True)

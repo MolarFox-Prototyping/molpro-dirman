@@ -3,7 +3,8 @@
 import os
 from pathlib import Path
 
-from .config import base_project_directory, base_symlink_directory, main_project_symlink_name, symlink_name
+# from .config import base_project_directory, base_symlink_directory, main_project_symlink_name, symlink_name
+from .config import Config, symlink_name
 from .sys_read import Project
 
 class ProjectSymLinkException(Exception):
@@ -22,8 +23,8 @@ class ProjectAlreadySymLinked(ProjectSymLinkException):
 def main_project_to_aux(ignore_no_main: bool=False) -> None:
   "Moves the current main project (if any) to its aux symlink point"
   os.rename(
-    base_symlink_directory() / main_project_symlink_name(), 
-    base_symlink_directory() / symlink_name(
+    Config.base_symlink_directory() / Config.main_project_symlink_name(), 
+    Config.base_symlink_directory() / symlink_name(
       Project.active(suppress_errors=ignore_no_main), is_main=False
     )
   )
@@ -37,7 +38,7 @@ def symlink_project(project_path: Path, is_main: bool, overwrite: bool=False, ke
     raise ProjectSymLinkFailure("Invalid target project - path must be at the root of a project directory")
   
   # Check if need to overwrite path
-  symlink_path = base_symlink_directory() / symlink_name(project_path.parts[-1], is_main=is_main)
+  symlink_path = Config.base_symlink_directory / symlink_name(project_path.parts[-1], is_main=is_main)
   if (symlink_path).exists():
 
     # Check if already symlinked as requested
