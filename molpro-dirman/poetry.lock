@@ -74,7 +74,7 @@ test = ["black (>=22.3.0,<23.0.0)", "coverage (>=5.2,<6.0)", "isort (>=5.0.6,<6.
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "41cf426499623252d8aaded73967fc337d96a81a1c06e2347123735803bbf256"
+content-hash = "edfca1f1ae96912cc8b86b4c0fde897198ef625bf65392bbd1778b648ce53899"
 
 [metadata.files]
 click = [
