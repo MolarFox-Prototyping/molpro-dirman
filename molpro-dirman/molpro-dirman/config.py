@@ -91,5 +91,5 @@ class Prefixes:
   def as_dict(verbose: bool=False) -> dict[dict[str, str]]:
     return {
       s: {"short": desc.short, "long": desc.long}
-      for s, desc in Prefixes.definitions.items()
+      for s, desc in Prefixes.definitions().items()
     }
