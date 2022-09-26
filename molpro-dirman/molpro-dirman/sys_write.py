@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from .config import base_project_directory, base_symlink_directory, main_project_symlink_name, symlink_name
-from .sys_read import is_valid_project_path, active_project
+from .sys_read import Project
 
 class ProjectSymLinkException(Exception):
   "General exception during project symlink attempt"
@@ -24,15 +24,15 @@ def main_project_to_aux(ignore_no_main: bool=False) -> None:
   os.rename(
     base_symlink_directory() / main_project_symlink_name(), 
     base_symlink_directory() / symlink_name(
-      active_project(suppress_errors=ignore_no_main), is_main=False
+      Project.active(suppress_errors=ignore_no_main), is_main=False
     )
   )
 
 
 def symlink_project(project_path: Path, is_main: bool, overwrite: bool=False, keep_old_main=False) -> None:
   "Safely symlinks a project directory to the specified slot"
-  if not is_valid_project_path(project_path, project_level_only=True):  # Check target path
-    if not is_valid_project_path(project_path):
+  if not Project.is_valid_path(project_path, project_level_only=True):  # Check target path
+    if not Project.is_valid_path(project_path):
       raise ProjectSymLinkFailure("Invalid target project - does it exist?")
     raise ProjectSymLinkFailure("Invalid target project - path must be at the root of a project directory")
   

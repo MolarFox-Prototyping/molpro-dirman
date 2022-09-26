@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "molpro-dirman"
-version = "0.0.2"
+version = "0.0.3"
 description = "CLI tool for managing local project directories"
 authors = ["MolarFox <molar@molarfox.io>"]
 license = "gpl-3.0"

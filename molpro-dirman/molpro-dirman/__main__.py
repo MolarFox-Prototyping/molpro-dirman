@@ -20,8 +20,8 @@ import typer
 from textwrap import dedent
 
 from . import print, print_json
-from .config import base_project_directory, prefix_definitions, serials_json, program_version
-from .sys_read import project_dirs
+from .config import Config, Prefixes
+from .sys_read import Project
 from .sys_write import symlink_project
 
 app = typer.Typer(invoke_without_command=True)
@@ -40,12 +40,12 @@ def active():
 @app.command()
 def ls():
   "List local projects that are ready to be made active"
-  print(project_dirs())
+  print(Project.list_names())
 
 @app.command()
 def activate(project_name: str):
   "Activate a project"
-  symlink_project(base_project_directory() / project_name)
+  symlink_project(Config.base_project_directory / project_name)
 
 
 @app.command()
@@ -64,7 +64,7 @@ def about():
   print(dedent(
     f"""
     MolarFox Prototyping: Project Directory Manager
-    [italic]Version {program_version()} - 2022[/italic]
+    [italic]Version {Config.version} - 2022[/italic]
     """
   ))
 
@@ -75,9 +75,9 @@ def prefixes(
   ):
   "List info about serial prefixes"
   if verbose:
-    print_json(data=serials_json())
+    print_json(data=Prefixes.as_dict())
   else:
-    print_json(data={s: info.short for s, info in prefix_definitions().items()})
+    print_json(data={s: info.short for s, info in Prefixes.definitions.items()})
 
 
 @app.callback(invoke_without_command=True)
