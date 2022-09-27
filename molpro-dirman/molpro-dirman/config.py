@@ -45,7 +45,7 @@ class Prefixes:
 
 
   @staticmethod
-  def definitions(verbose: bool=False) -> dict[str, PrefixDescription]:
+  def definitions() -> dict[str, PrefixDescription]:
     "Dictionary mapping serial prefix characters to their meanings"
     return {
       "A": Prefixes.PrefixDescription(
