@@ -1,7 +1,9 @@
 # Test passive system interaction methods
 
+from unittest.mock import MagicMock
 from datetime import datetime
-from . import sys_read
+
+from . import sys_read, config
 from tests.fixtures import *
 
 def test_ls_dirs_only(populated_dir):
@@ -36,3 +38,71 @@ def test_last_modified(datetimed_dir):
 
   output2 = run_and_sort(recursively_check=False)
   assert output2.index("DO-4256663") < output2.index("T-1234567")
+
+
+def test_project_list_paths(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
+
+  output = sys_read.Project.list_paths()
+  assert all(isinstance(k, Path) for k in output)
+  for pj_key in (populated_dir / "home" / "Projects").iterdir():
+    if pj_key.is_dir():
+      assert pj_key in output
+
+
+def test_project_list_names(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
+
+  output = sys_read.Project.list_names()
+  assert all(isinstance(x, str) for x in output)
+  for pj_key in (populated_dir / "home" / "Projects").iterdir():
+    if pj_key.is_dir():
+      assert pj_key.parts[-1] in output
+
+
+def test_project_active_existent(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+
+  assert sys_read.Project.active() == "DO-4256663"
+
+
+def test_project_active_non_existent(structured_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=structured_dir / "home" / "Projects"
+  )
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=structured_dir / "home"
+  )
+
+  assert sys_read.Project.active() is None
+  with pytest.raises(FileNotFoundError):
+    sys_read.Project.active(suppress_errors=False)
+
+
+def test_project_is_valid_path(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
+
+  for pj_key in (populated_dir / "home" / "Projects").iterdir():
+    if pj_key.is_dir():
+      assert sys_read.Project.is_valid_path(pj_key) is True
+      assert sys_read.Project.is_valid_path(pj_key, project_level_only=True) is True
+
+      randfile = random.choice([
+        pj_key for pj_key in (populated_dir / "home" / "Projects").iterdir()
+      ])
+
+      assert sys_read.Project.is_valid_path(pj_key) is True
+      assert sys_read.Project.is_valid_path(pj_key, project_level_only=True) is False
+
+  assert sys_read.Project.is_valid_path(populated_dir / "fake_path" / "Projects") is False

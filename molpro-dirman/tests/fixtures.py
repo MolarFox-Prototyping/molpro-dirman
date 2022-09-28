@@ -69,6 +69,12 @@ def populated_dir(structured_dir, generate_data) -> Path:
           with open(subdir_path / str(uuid.uuid4()), "wb") as fd2:
             fd2.write(generate_data(*RANDOM_FILE_SIZE))
 
+  os.symlink(
+    structured_dir / "home" / "Projects" / "DO-4256663", 
+    structured_dir / "home" / "current_project", 
+    target_is_directory=True
+  )
+
   yield structured_dir
 
 
