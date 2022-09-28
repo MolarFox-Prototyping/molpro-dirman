@@ -105,4 +105,5 @@ def test_project_is_valid_path(populated_dir):
       assert sys_read.Project.is_valid_path(randfile) is True
       assert sys_read.Project.is_valid_path(randfile, project_level_only=True) is False
 
+  assert sys_read.Project.is_valid_path(populated_dir / "home" / "Documents") is False
   assert sys_read.Project.is_valid_path(populated_dir / "fake_path" / "Projects") is False
