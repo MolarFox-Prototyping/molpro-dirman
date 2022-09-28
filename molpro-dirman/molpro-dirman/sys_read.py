@@ -72,8 +72,10 @@ class Project:
       return (
         path.exists() and
         (
-          len(path.relative_to(Config.base_project_directory()).parts) == 1 or 
-          not project_level_only
+          (
+            len(path.relative_to(Config.base_project_directory()).parts) == 1 and
+            path.relative_to(Config.base_project_directory()).parts[-1] == path.parts[-1]
+          ) or not project_level_only
         )
       )
     except ValueError:

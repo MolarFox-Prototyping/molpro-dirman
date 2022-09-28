@@ -99,10 +99,10 @@ def test_project_is_valid_path(populated_dir):
       assert sys_read.Project.is_valid_path(pj_key, project_level_only=True) is True
 
       randfile = random.choice([
-        pj_key for pj_key in (populated_dir / "home" / "Projects").iterdir()
+        key for key in pj_key.iterdir()
       ])
 
-      assert sys_read.Project.is_valid_path(pj_key) is True
-      assert sys_read.Project.is_valid_path(pj_key, project_level_only=True) is False
+      assert sys_read.Project.is_valid_path(randfile) is True
+      assert sys_read.Project.is_valid_path(randfile, project_level_only=True) is False
 
   assert sys_read.Project.is_valid_path(populated_dir / "fake_path" / "Projects") is False
