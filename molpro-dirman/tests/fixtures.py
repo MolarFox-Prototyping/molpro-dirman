@@ -4,6 +4,7 @@ import os
 import uuid
 import pytest
 import random
+from datetime import datetime, timedelta
 
 from pathlib import Path
 from typing import Callable
@@ -31,6 +32,16 @@ def structured_dir(tmpdir) -> Path:
   os.mkdir(project_dir / "DO-4256663")
   os.mkdir(project_dir / "ABCDEF-4567890")
 
+  os.utime(project_dir / "T-1234567", (
+    (datetime.now() + timedelta(days=90)).timestamp(),  # atime
+    (datetime.now() + timedelta(days=81)).timestamp()   # mtime
+  ))
+
+  os.utime(project_dir / "DO-4256663", (
+    (datetime.now() + timedelta(days=76)).timestamp(),  # atime
+    (datetime.now() + timedelta(days=21)).timestamp()   # mtime
+  ))
+
   yield Path(tmpdir)
 
 
@@ -57,5 +68,26 @@ def populated_dir(structured_dir, generate_data) -> Path:
         for __ in range(random.randint(*RANDOM_FILES_PER_DIR)):
           with open(subdir_path / str(uuid.uuid4()), "wb") as fd2:
             fd2.write(generate_data(*RANDOM_FILE_SIZE))
+
+  yield structured_dir
+
+
+@pytest.fixture
+def datetimed_dir(structured_dir, generate_data) -> Path:
+  for key in (structured_dir / "home" / "Projects").iterdir():
+    if key.is_dir():
+
+      # Make readme
+      with open(key / "README.md", "wb") as fd:
+        fd.write(generate_data(*RANDOM_README_SIZE))
+      os.utime(key / "README.md", (
+        (datetime.now() - timedelta(days=256)).timestamp(),  # atime
+        (datetime.now() - timedelta(days=301)).timestamp()   # mtime
+      ))
+
+  os.utime(structured_dir / "home" / "Projects"/ "DO-4256663" / "README.md", (
+    (datetime.now() - timedelta(days=3)).timestamp(),  # atime
+    (datetime.now() - timedelta(days=5)).timestamp()   # mtime
+  ))
 
   yield structured_dir
