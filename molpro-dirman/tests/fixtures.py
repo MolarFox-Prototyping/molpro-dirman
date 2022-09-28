@@ -3,7 +3,6 @@
 import os
 import uuid
 import pytest
-import tempfile
 import random
 
 from pathlib import Path
@@ -20,25 +19,19 @@ def generate_data() -> Callable[[int, int], bytes]:
 
 
 @pytest.fixture
-def temp_dir() -> Path:
-  with tempfile.TemporaryDirectory() as tmp_dir:
-    yield Path(tmp_dir)
+def structured_dir(tmpdir) -> Path:
+  os.mkdir(tmpdir / "home")
+  os.mkdir(tmpdir / "home" / "Documents")
+  os.mkdir(tmpdir / "home" / "OtherFolder")
 
-
-@pytest.fixture
-def structured_dir(temp_dir) -> Path:
-  os.mkdir(temp_dir / "home")
-  os.mkdir(temp_dir / "home" / "Documents")
-  os.mkdir(temp_dir / "home" / "OtherFolder")
-
-  project_dir = temp_dir / "home" / "Projects"
+  project_dir = tmpdir / "home" / "Projects"
   os.mkdir(project_dir)
   os.mkdir(project_dir / "T-1234567")
   os.mkdir(project_dir / "DT-1234567")
   os.mkdir(project_dir / "DO-4256663")
   os.mkdir(project_dir / "ABCDEF-4567890")
 
-  yield temp_dir
+  yield Path(tmpdir)
 
 
 @pytest.fixture
@@ -47,22 +40,22 @@ def populated_dir(structured_dir, generate_data) -> Path:
     if key.is_dir():
 
       # Make readme
-      with open(key / "README.md", "w") as fd:
+      with open(key / "README.md", "wb") as fd:
         fd.write(generate_data(*RANDOM_README_SIZE))
 
       # Make some files in root dir
-      for __ in random.randint(*RANDOM_FILES_PER_DIR):
-        with open(key / str(uuid.uuid4()), "w") as fd2:
+      for __ in range(random.randint(*RANDOM_FILES_PER_DIR)):
+        with open(key / str(uuid.uuid4()), "wb") as fd2:
           fd2.write(generate_data(*RANDOM_FILE_SIZE))
       
       # Make some subdirs
-      for _ in random.randint(*RANDOM_SUBDIRS):
+      for _ in range(random.randint(*RANDOM_SUBDIRS)):
         subdir_path = key / str(uuid.uuid4())
         os.mkdir(subdir_path)
         
         # Make some files in each subdir
-        for __ in random.randint(*RANDOM_FILES_PER_DIR):
-          with open(subdir_path / str(uuid.uuid4()), "w") as fd2:
+        for __ in range(random.randint(*RANDOM_FILES_PER_DIR)):
+          with open(subdir_path / str(uuid.uuid4()), "wb") as fd2:
             fd2.write(generate_data(*RANDOM_FILE_SIZE))
 
   yield structured_dir

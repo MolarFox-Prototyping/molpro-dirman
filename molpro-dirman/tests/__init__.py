@@ -1,4 +1,3 @@
-import pytest
 import importlib
 
 main = importlib.import_module("molpro-dirman.__main__")
