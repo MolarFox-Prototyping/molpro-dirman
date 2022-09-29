@@ -31,6 +31,7 @@ def structured_dir(tmpdir) -> Path:
   os.mkdir(project_dir / "DT-1234567")
   os.mkdir(project_dir / "DO-4256663")
   os.mkdir(project_dir / "ABCDEF-4567890")
+  os.mkdir(project_dir / "APJ-1234567")
 
   os.utime(project_dir / "T-1234567", (
     (datetime.now() + timedelta(days=90)).timestamp(),  # atime

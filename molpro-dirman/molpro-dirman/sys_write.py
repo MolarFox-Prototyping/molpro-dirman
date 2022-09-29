@@ -18,6 +18,9 @@ class ProjectSymLinkExists(ProjectSymLinkException):
 class ProjectAlreadySymLinked(ProjectSymLinkException):
   "SymLink already exists in the requested configuration"
 
+class ProjectSymlinkedElsewhere(ProjectSymLinkException):
+  "Project is symlinked already, elsewhere in the symlink directory path"
+
 
 def move_main_to_aux(overwrite_existing: bool=False) -> Path:
   "Moves the current main project (if any) to its aux symlink point, returns aux symlink path"
@@ -64,11 +67,11 @@ def symlink_project(
   expected_symlinks: list[Path] = []
 
   # Check if need to overwrite path
-  symlink_path = Config.base_symlink_directory / symlink_name(project_path.parts[-1], is_main=is_main)
+  symlink_path = Config.base_symlink_directory() / symlink_name(project_path.parts[-1], is_main=is_main)
   if (symlink_path).exists():
 
     # Check if already symlinked as requested
-    if os.readlink(symlink_path) == project_path:
+    if Path(os.readlink(symlink_path)) == project_path:
       raise ProjectAlreadySymLinked(f"Project {project_path.parts[-1]} already symlinked at {symlink_path}")
 
     # Don't modify existing symlink unless overwrite mode enabled
