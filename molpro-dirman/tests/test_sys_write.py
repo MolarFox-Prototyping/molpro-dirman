@@ -109,14 +109,15 @@ def test_unlink_all_main_only(populated_dir):
   config.Config.base_symlink_directory = MagicMock(
     return_value=populated_dir / "home"
   )
+
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.unlink_all(main_only=True)
   links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   
-  assert links_before - links_after == {"current_project",}
+  assert links_before - links_after == {populated_dir / "home" / "current_project",}
   assert len(links_before) - 1 == len(links_after)
 
-  assert set(output) == {"current_project",}
+  assert set(output) == {populated_dir / "home" / "current_project"}
 
 
 def test_unlink_all(populated_dir):
@@ -140,6 +141,9 @@ def test_unlink_all(populated_dir):
 
 
 def test_unlink_specific_simple(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
   config.Config.base_symlink_directory = MagicMock(
     return_value=populated_dir / "home"
   )
@@ -155,6 +159,9 @@ def test_unlink_specific_simple(populated_dir):
 
 
 def test_unlink_specific_multiple_points(populated_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=populated_dir / "home" / "Projects"
+  )
   config.Config.base_symlink_directory = MagicMock(
     return_value=populated_dir / "home"
   )
@@ -175,6 +182,9 @@ def test_unlink_specific_multiple_points(populated_dir):
 
 
 def test_unlink_specific_nothing_to_remove(structured_dir):
+  config.Config.base_project_directory = MagicMock(
+    return_value=structured_dir / "home" / "Projects"
+  )
   config.Config.base_symlink_directory = MagicMock(
     return_value=structured_dir / "home"
   )
