@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock
 from datetime import datetime
+from shutil import rmtree
 
 from . import sys_read, config
 from tests.fixtures import *
@@ -86,6 +87,70 @@ def test_project_active_non_existent(structured_dir):
   assert sys_read.Project.active() is None
   with pytest.raises(FileNotFoundError):
     sys_read.Project.active(suppress_errors=False)
+
+
+def test_project_all_symlinks(populated_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+
+  tests = [
+    {
+      "kwargs": {"mpdman_only": False},
+      "expected": ["current_project", "project_T-1234567", "project_DT-1234567", "ohman_love_documents"]
+    },
+    {
+      "kwargs": {"mpdman_only": True},
+      "expected": ["current_project", "project_T-1234567", "project_DT-1234567"]
+    },
+  ]
+
+  for test in tests:
+    output = sys_read.Project.all_symlinks(**test["kwargs"])
+    assert len(output) == len(test["expected"])
+    assert all(key.parts[-1] in test["expected"] for key in output)
+
+  rmtree(populated_dir / "home")
+  assert sys_read.Project.all_symlinks() == []
+
+
+def test_project_symlinks_to(populated_dir):
+  project_base_dir = populated_dir / "home" / "Projects"
+  symlink_base_dir = populated_dir / "home"
+
+  config.Config.base_project_directory = MagicMock(
+    return_value=project_base_dir
+  )
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=symlink_base_dir
+  )
+  
+  tests = [
+    {
+      "kwargs": {"path": project_base_dir / "DO-4256663", "mpdman_only": False},
+      "expected": [symlink_base_dir / "current_project"]
+    },
+    {
+      "kwargs": {"path": project_base_dir / "DT-1234567", "mpdman_only": False},
+      "expected": [symlink_base_dir / "project_DT-1234567"]
+    },
+    {
+      "kwargs": {"path": project_base_dir / "ABCDEF-4567890", "mpdman_only": True},
+      "expected": [symlink_base_dir / "my_custom_symlink_awooo"]
+    },
+    {
+      "kwargs": {"path": project_base_dir / "ABCDEF-4567890", "mpdman_only": True},
+      "expected": []
+    },
+  ]
+
+  for test in tests:
+    output = sys_read.Project.symlinks_to(**test["kwargs"])
+    assert len(output) == len(test["expected"])
+    assert all(key in test["expected"] for key in output)
+
+  with pytest.raises(ValueError):
+    sys_read.Project.symlinks_to(symlink_base_dir / "Documents")
 
 
 def test_project_is_valid_path(populated_dir):

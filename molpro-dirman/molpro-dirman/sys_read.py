@@ -66,6 +66,16 @@ class Project:
 
 
   @staticmethod
+  def all_symlinks(mpdman_only: bool=True) -> list[Path]:
+    "Find all symlinks that exist in symlink dir, optionally including even ones not made in mpdman"
+    
+
+  @staticmethod
+  def symlinks_to(path: Path, mpdman_only: bool=True) -> list[Path]:
+    "Find all symlinks to the target project path in symlink directory / only ones made by this program"
+
+
+  @staticmethod
   def is_valid_path(path: Path, project_level_only: bool=False) -> bool:
     "Verify a path is validly within a project (or is project directory, if param set)"
     try:

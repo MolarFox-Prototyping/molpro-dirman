@@ -75,6 +75,30 @@ def populated_dir(structured_dir, generate_data) -> Path:
     target_is_directory=True
   )
 
+  os.symlink(
+    structured_dir / "home" / "Projects" / "T-1234567", 
+    structured_dir / "home" / "project_T-1234567", 
+    target_is_directory=True
+  )
+
+  os.symlink(
+    structured_dir / "home" / "Projects" / "DT-1234567", 
+    structured_dir / "home" / "project_DT-1234567", 
+    target_is_directory=True
+  )
+
+  os.symlink(
+    structured_dir / "home" / "Projects" / "ABCDEF-4567890",
+    structured_dir / "home" / "my_custom_symlink_awooo", 
+    target_is_directory=True
+  )
+
+  os.symlink(
+    structured_dir / "home" / "Documents", 
+    structured_dir / "home" / "ohman_love_documents", 
+    target_is_directory=True
+  )
+
   yield structured_dir
 
 
