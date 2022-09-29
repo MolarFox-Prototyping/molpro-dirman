@@ -1,4 +1,6 @@
 # Test config methods
+
+import re
 import json
 
 from pathlib import Path
@@ -27,6 +29,45 @@ def test_config_base_symlink_directory():
 
 def test_config_main_project_symlink_name():
   assert config.Config.main_project_symlink_name() == config.symlink_name("", is_main=True)
+
+
+def test_config_symlink_name_regex():
+  test_input = [
+    "project_DT-1234567",
+    "not_a_match",
+    "project_peepee",
+    "current_project",
+    "project_AFS-3216548",
+    "project_LONG-32165489",
+    "project_ABCDEFG-3216548",
+  ]
+  tests = [
+    {
+      "kwargs": {"include_main": True, "include_aux": True},
+      "expected": ["current_project", "project_DT-1234567", "project_AFS-3216548", "project_ABCDEFG-3216548"]
+    },
+    {
+      "kwargs": {"include_main": True, "include_aux": False},
+      "expected": ["current_project"]
+    },
+    {
+      "kwargs": {"include_main": False, "include_aux": True},
+      "expected": ["project_DT-1234567", "project_AFS-3216548", "project_ABCDEFG-3216548"]
+    },
+    {
+      "kwargs": {"include_main": False, "include_aux": False},
+      "expected": [""]
+    },
+  ]
+
+  for test in tests:
+    assert set(
+      re.findall(
+        config.Config.symlink_name_regex(**test["kwargs"]),
+        "\n".join(test_input),
+        flags=re.M
+      )
+    ) == set(test["expected"])
 
 
 def test_symlink_name():
