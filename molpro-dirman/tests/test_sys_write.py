@@ -5,6 +5,29 @@ from unittest.mock import MagicMock
 from . import sys_write, config
 from tests.fixtures import *
 
+def test_delete_symlink(populated_dir):
+  with pytest.raises(ValueError):
+    sys_write.delete_symlink(populated_dir / "home" / "Projects" / "T-1234567" / "README.md")
+
+  with pytest.raises(ValueError):
+    sys_write.delete_symlink(populated_dir / "home" / "Documents")
+
+  with pytest.raises(ValueError):
+    sys_write.delete_symlink(populated_dir / "home" / "my_custom_symlink_awooo")
+
+  assert (populated_dir / "home" / "my_custom_symlink_awooo").exists()
+
+  links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.delete_symlink(populated_dir / "home" / "my_custom_symlink_awooo", mpdman_only=False)
+  links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+
+  assert not (populated_dir / "home" / "my_custom_symlink_awooo").exists()
+  assert output == populated_dir / "home" / "my_custom_symlink_awooo"
+  assert links_before - links_after == {populated_dir / "home" / "my_custom_symlink_awooo",}
+  assert len(links_before) -1 == len(links_after)
+  
+
+
 def test_move_main_to_aux_simple(populated_dir):
   config.Config.base_symlink_directory = MagicMock(
     return_value=populated_dir / "home"
