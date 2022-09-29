@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 
 from pathlib import Path
 from typing import Callable
+from unittest.mock import MagicMock
+
+from . import config
 
 RANDOM_SUBDIRS = [0, 3]
 RANDOM_FILES_PER_DIR = [0, 5]
@@ -17,6 +20,19 @@ RANDOM_FILE_SIZE = [0, 16384]
 @pytest.fixture
 def generate_data() -> Callable[[int, int], bytes]:
   return lambda min_size, max_size: random.randbytes(random.randint(min_size, max_size))
+
+
+@pytest.fixture
+def mock_base_directories() -> Callable[[Path], None]:
+  def _mock_base_directories(base_path: Path) -> None:
+    config.Config.base_project_directory = MagicMock(
+      return_value=base_path / "home" / "Projects"
+    )
+    config.Config.base_symlink_directory = MagicMock(
+      return_value=base_path / "home"
+    )
+
+  return lambda p: _mock_base_directories(p)
 
 
 @pytest.fixture

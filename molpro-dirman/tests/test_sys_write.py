@@ -28,10 +28,9 @@ def test_delete_symlink(populated_dir):
   
 
 
-def test_move_main_to_aux_simple(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_move_main_to_aux_simple(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
+  
   main_link = populated_dir / "home" / config.Config.main_project_symlink_name()
   aux_link = populated_dir / "home" / config.symlink_name("DO-4256663", is_main=False)
   tgt_project = populated_dir / "home" / "Projects" / "DO-4256663"
@@ -47,10 +46,9 @@ def test_move_main_to_aux_simple(populated_dir):
   assert not main_link.exists()
 
 
-def test_move_main_to_aux_non_existent(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_move_main_to_aux_non_existent(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
+
   main_link = populated_dir / "home" / config.Config.main_project_symlink_name()
   os.remove(main_link)
   assert not main_link.exists()
@@ -59,10 +57,9 @@ def test_move_main_to_aux_non_existent(populated_dir):
     sys_write.move_main_to_aux()
 
 
-def test_move_main_to_aux_already_existing(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_move_main_to_aux_already_existing(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
+
   main_link = populated_dir / "home" / config.Config.main_project_symlink_name()
   aux_link = populated_dir / "home" / config.symlink_name("DO-4256663", is_main=False)
   tgt_project = populated_dir / "home" / "Projects" / "DO-4256663"
@@ -80,10 +77,9 @@ def test_move_main_to_aux_already_existing(populated_dir):
   assert not main_link.exists()
 
 
-def test_move_main_to_aux_linked_elsewhere(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_move_main_to_aux_linked_elsewhere(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
+
   main_link = populated_dir / "home" / config.Config.main_project_symlink_name()
   aux_link = populated_dir / "home" / config.symlink_name("DO-4256663", is_main=False)
   tgt_project = populated_dir / "home" / "Projects" / "DO-4256663"
@@ -105,10 +101,8 @@ def test_move_main_to_aux_linked_elsewhere(populated_dir):
   assert not main_link.exists()
 
 
-def test_unlink_all_main_only(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_unlink_all_main_only(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.unlink_all(main_only=True)
@@ -120,10 +114,9 @@ def test_unlink_all_main_only(populated_dir):
   assert set(output) == {populated_dir / "home" / "current_project"}
 
 
-def test_unlink_all(populated_dir):
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_unlink_all(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
+
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.unlink_all(main_only=False)
   links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
@@ -140,13 +133,8 @@ def test_unlink_all(populated_dir):
   }
 
 
-def test_unlink_specific_simple(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_unlink_specific_simple(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.unlink_specific(populated_dir / "home" / "Projects" / "DT-1234567")
   links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
@@ -158,13 +146,8 @@ def test_unlink_specific_simple(populated_dir):
   assert set(output) == {populated_dir / "home" / "project_DT-1234567",}
 
 
-def test_unlink_specific_multiple_points(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_unlink_specific_multiple_points(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
   os.symlink(
     populated_dir / "home" / "Projects" / "DO-4256663",
     populated_dir / "home" / "project_DO-4256663",
@@ -181,13 +164,9 @@ def test_unlink_specific_multiple_points(populated_dir):
   assert set(output) == {populated_dir / "home" / "current_project", populated_dir / "home" / "project_DO-4256663"}
 
 
-def test_unlink_specific_nothing_to_remove(structured_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=structured_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=structured_dir / "home"
-  )
+def test_unlink_specific_nothing_to_remove(structured_dir, mock_base_directories):
+  mock_base_directories(structured_dir)
+
   links_before = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.unlink_specific(structured_dir / "home" / "Projects" / "DO-4256663")
   links_after = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
@@ -196,13 +175,9 @@ def test_unlink_specific_nothing_to_remove(structured_dir):
   assert output == []
 
 
-def test_symlink_project_simple(structured_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=structured_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=structured_dir / "home"
-  )
+def test_symlink_project_simple(structured_dir, mock_base_directories):
+  mock_base_directories(structured_dir)
+
   links_before = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.symlink_project(structured_dir / "home" / "Projects" / "DO-4256663", is_main=True)
   links_after = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
@@ -212,13 +187,9 @@ def test_symlink_project_simple(structured_dir):
   assert output == structured_dir / "home" / "current_project"
 
 
-def test_symlink_project_simple_aux(structured_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=structured_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=structured_dir / "home"
-  )
+def test_symlink_project_simple_aux(structured_dir, mock_base_directories):
+  mock_base_directories(structured_dir)
+
   links_before = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
   output = sys_write.symlink_project(structured_dir / "home" / "Projects" / "DO-4256663", is_main=False)
   links_after = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
@@ -228,13 +199,8 @@ def test_symlink_project_simple_aux(structured_dir):
   assert output == structured_dir / "home" / "project_DO-4256663"
 
 
-def test_symlink_project_invalid_paths(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_symlink_project_invalid_paths(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   with pytest.raises(sys_write.ProjectSymLinkFailure):
     sys_write.symlink_project(populated_dir / "home" / "Documents", True)
@@ -249,13 +215,8 @@ def test_symlink_project_invalid_paths(populated_dir):
     sys_write.symlink_project(populated_dir / "home" / "Projects" / "T-1234567" / "README.md", False)
 
 
-def test_symlink_project_already_created(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_symlink_project_already_created(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   with pytest.raises(sys_write.ProjectAlreadySymLinked):
     sys_write.symlink_project(populated_dir / "home" / "Projects" / "DO-4256663", True)
@@ -264,13 +225,8 @@ def test_symlink_project_already_created(populated_dir):
     sys_write.symlink_project(populated_dir / "home" / "Projects" / "T-1234567", False)
 
 
-def test_symlink_project_overwrite_existing(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_symlink_project_overwrite_existing(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   os.symlink(
     populated_dir / "home" / "OtherFolder", 
@@ -291,13 +247,8 @@ def test_symlink_project_overwrite_existing(populated_dir):
   assert old_main == os.readlink(populated_dir / "home" / "current_project")
 
 
-def test_symlink_project_overwrite_existing_main(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_symlink_project_overwrite_existing_main(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   with pytest.raises(sys_write.ProjectSymLinkExists):
     sys_write.symlink_project(populated_dir / "home" / "Projects" / "APJ-1234567", True)
@@ -318,13 +269,8 @@ def test_symlink_project_overwrite_existing_main(populated_dir):
   assert not (populated_dir / "home" / f"project_{Path(old_main).parts[-1]}").exists()
 
 
-def test_symlink_project_overwrite_existing_main_retain(populated_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=populated_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=populated_dir / "home"
-  )
+def test_symlink_project_overwrite_existing_main_retain(populated_dir, mock_base_directories):
+  mock_base_directories(populated_dir)
 
   with pytest.raises(sys_write.ProjectSymLinkExists):
     sys_write.symlink_project(populated_dir / "home" / "Projects" / "APJ-1234567", True)
@@ -345,13 +291,9 @@ def test_symlink_project_overwrite_existing_main_retain(populated_dir):
   assert (populated_dir / "home" / f"project_{Path(old_main).parts[-1]}").exists()
 
 
-def test_symlink_project_exists_elsewhere(structured_dir):
-  config.Config.base_project_directory = MagicMock(
-    return_value=structured_dir / "home" / "Projects"
-  )
-  config.Config.base_symlink_directory = MagicMock(
-    return_value=structured_dir / "home"
-  )
+def test_symlink_project_exists_elsewhere(structured_dir, mock_base_directories):
+  mock_base_directories(structured_dir)
+
   main_link = structured_dir / "home" / config.Config.main_project_symlink_name()
   aux_link = structured_dir / "home" / config.symlink_name("APJ-1234567", is_main=False)
   tgt_project = structured_dir / "home" / "Projects" / "APJ-1234567"
