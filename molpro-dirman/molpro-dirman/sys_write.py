@@ -40,12 +40,12 @@ def move_main_to_aux(overwrite_existing: bool=False) -> Path:
   return aux_symlink_path
 
 
-def unlink_projects(main_only: bool=True) -> None:
-  "Unlinks the main project and, optionally, all other aux symlinks"
+def unlink_all(main_only: bool=True) -> list[Path]:
+  "Unlinks the main project and, optionally, all other aux symlinks - returns list of removed symlinks"
 
 
-def unlink_specific_project(project_path: Path) -> None:
-  "Unlinks all references to the specified project in symlink directory"
+def unlink_specific(project_path: Path) -> list[Path]:
+  "Unlinks all references to the specified project in symlink directory - returns list of removed symlinks"
 
 
 def symlink_project(
@@ -54,7 +54,7 @@ def symlink_project(
   overwrite: bool=False, 
   keep_old_main: bool=False,
   ignore_existing_symlinks: bool=False
-) -> None:
+) -> Path:
   "Safely symlinks a project directory to the specified slot"
   if not Project.is_valid_path(project_path, project_level_only=True):  # Check target path
     if not Project.is_valid_path(project_path):
@@ -86,3 +86,4 @@ def symlink_project(
     pass
 
   os.symlink(project_path, symlink_path, target_is_directory=True)
+  return symlink_path

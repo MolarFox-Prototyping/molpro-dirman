@@ -80,3 +80,84 @@ def test_move_main_to_aux_linked_elsewhere(populated_dir):
   assert aux_link.exists()
   assert Path(os.readlink(aux_link)) == tgt_project
   assert not main_link.exists()
+
+
+def test_unlink_all_main_only(populated_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+  links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.unlink_all(main_only=True)
+  links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  
+  assert links_before - links_after == {"current_project",}
+  assert len(links_before) - 1 == len(links_after)
+
+  assert set(output) == {"current_project",}
+
+
+def test_unlink_all(populated_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+  links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.unlink_all(main_only=False)
+  links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+
+  assert len(links_before) - 3 == len(links_after)
+  assert populated_dir / "home" / "my_custom_symlink_awooo" in links_after
+  assert populated_dir / "home" / "ohman_love_documents" in links_after
+  assert populated_dir / "home" / "current_project" not in links_after
+
+  assert set(output) == {
+    populated_dir / "home" / "current_project",
+    populated_dir / "home" / "project_T-1234567",
+    populated_dir / "home" / "project_DT-1234567",
+  }
+
+
+def test_unlink_specific_simple(populated_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+  links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.unlink_specific(populated_dir / "home" / "Projects" / "DT-1234567")
+  links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+
+  assert len(links_before) - 1 == len(links_after)
+  assert populated_dir / "home" / "project_DT-1234567" not in links_after
+  assert populated_dir / "home" / "current_project" in links_after
+
+  assert set(output) == {populated_dir / "home" / "project_DT-1234567",}
+
+
+def test_unlink_specific_multiple_points(populated_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=populated_dir / "home"
+  )
+  os.symlink(
+    populated_dir / "home" / "Projects" / "DO-4256663",
+    populated_dir / "home" / "project_DO-4256663",
+    target_is_directory=True
+  )
+  links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.unlink_specific(populated_dir / "home" / "Projects" / "DO-4256663")
+  links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
+
+  assert len(links_before) - 2 == len(links_after)
+  assert populated_dir / "home" / "current_project" not in links_after
+  assert populated_dir / "home" / "project_DO-4256663" not in links_after
+
+  assert set(output) == {populated_dir / "home" / "current_project", populated_dir / "home" / "project_DO-4256663"}
+
+
+def test_unlink_specific_nothing_to_remove(structured_dir):
+  config.Config.base_symlink_directory = MagicMock(
+    return_value=structured_dir / "home"
+  )
+  links_before = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
+  output = sys_write.unlink_specific(structured_dir / "home" / "Projects" / "DO-4256663")
+  links_after = set([k for k in (structured_dir / "home").iterdir() if os.path.islink(k)])
+
+  assert links_before == links_after
+  assert output == []
