@@ -37,7 +37,7 @@ class Config:
   
   @staticmethod
   def symlink_name_regex(include_main: bool=True, include_aux: bool=True):
-    "Regex matching main and/or aux project symlink names"
+    "Regex matching main and/or aux project symlink names - expects to be run in multiline mode"
     return r"|".join(
       s for s in [
         include_main and r"^current_project$",

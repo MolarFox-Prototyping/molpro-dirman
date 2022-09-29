@@ -1,8 +1,10 @@
 # Methods and helpers for interacting passively with the local filesystem
 
+from distutils.command.config import config
 import os
 from pathlib import Path
 from datetime import datetime
+import re
 from typing import Optional
 
 from .config import Config
@@ -68,7 +70,17 @@ class Project:
   @staticmethod
   def all_symlinks(mpdman_only: bool=True) -> list[Path]:
     "Find all symlinks that exist in symlink dir, optionally including even ones not made in mpdman"
-    
+    return [
+      key for key in 
+      Config.base_symlink_directory().iterdir() if (
+        os.path.islink(key) and
+        (
+          re.fullmatch(Config.symlink_name_regex(), key.parts[-1]) is not None or
+          not mpdman_only
+        )
+      )
+    ]
+
 
   @staticmethod
   def symlinks_to(path: Path, mpdman_only: bool=True) -> list[Path]:
