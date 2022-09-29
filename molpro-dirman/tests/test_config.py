@@ -70,6 +70,21 @@ def test_config_symlink_name_regex():
     ) == set(test["expected"])
 
 
+def test_matches_symlink_regex():
+  tests = [
+    ["project_DT-1234567", True],
+    ["not_a_match", False],
+    ["project_peepee", False],
+    ["current_project", True],
+    ["project_AFS-3216548", True],
+    ["project_LONG-32165489", False],
+    ["project_ABCDEFG-3216548", True],
+  ]
+
+  for test in tests:
+    assert config.Config.matches_symlink_regex(test[0]) == test[1]
+
+
 def test_symlink_name():
   assert config.symlink_name("", is_main=True) == config.symlink_name("asdf", is_main=True)
   assert config.symlink_name("", is_main=True) == config.symlink_name("")

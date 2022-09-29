@@ -75,7 +75,7 @@ class Project:
         os.path.islink(key) and
         (
           not mpdman_only or
-          re.fullmatch(Config.symlink_name_regex(), key.parts[-1]) is not None
+          Config.matches_symlink_regex(key)
         )
       )
     ]

@@ -27,7 +27,7 @@ def delete_symlink(path: Path, mpdman_only=True) -> Path:
   "Safe method to delete only symlinks. Also can perform check to ensure it is an mpdman-created symlink"
   if not os.path.islink(path):
     raise ValueError("Delete symlink called on a file object that is not a symlink")
-  if mpdman_only and re.fullmatch(Config.symlink_name_regex(), path.parts[-1], flags=re.M) is None:
+  if mpdman_only and not Config.matches_symlink_regex(path):
     raise ValueError("Symlink does not match project symlink regex")
 
   os.remove(path)
@@ -55,15 +55,14 @@ def move_main_to_aux(overwrite_existing: bool=False) -> Path:
   return aux_symlink_path
 
 
-def unlink_all(main_only: bool=False, force=False) -> list[Path]:
+def unlink_all(main_only: bool=False) -> list[Path]:
   "Unlinks the main project and, optionally, all other aux symlinks - returns list of removed symlinks"
   if main_only:
     return [delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())]
   
   return [
-    delete_symlink(s, mpdman_only=(not force)) for s in Project.all_symlinks(mpdman_only=True)
+    delete_symlink(s, mpdman_only=True) for s in Project.all_symlinks(mpdman_only=True)
   ]
-
 
 
 def unlink_specific(project_path: Path) -> list[Path]:

@@ -1,7 +1,9 @@
 # Utils for interacting with local config files
 
+import re
 from pathlib import Path
 from collections import namedtuple
+from typing import Union
 
 
 def symlink_name(project_name: str, is_main:bool=True) -> str:
@@ -44,6 +46,13 @@ class Config:
         include_aux and r"^project_[A-Z]+-\d{7}$",
        ] if s
     )
+
+
+  @staticmethod
+  def matches_symlink_regex(symlink: Union[Path, str], **kwargs) -> bool:
+    if isinstance(symlink, Path):
+      symlink = symlink.parts[-1]
+    return re.fullmatch(Config.symlink_name_regex(), symlink) is not None
 
 
 # PREFIX DESCRIPTIONS
