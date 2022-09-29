@@ -107,8 +107,7 @@ def test_project_all_symlinks(populated_dir):
 
   for test in tests:
     output = sys_read.Project.all_symlinks(**test["kwargs"])
-    assert all(key.parts[-1] in test["expected"] for key in output)
-    assert len(output) == len(test["expected"])
+    assert set(key.parts[-1] for key in output) == set(test["expected"])
 
   rmtree(populated_dir / "home")
   os.mkdir(populated_dir / "home")
@@ -136,7 +135,7 @@ def test_project_symlinks_to(populated_dir):
       "expected": [symlink_base_dir / "project_DT-1234567"]
     },
     {
-      "kwargs": {"path": project_base_dir / "ABCDEF-4567890", "mpdman_only": True},
+      "kwargs": {"path": project_base_dir / "ABCDEF-4567890", "mpdman_only": False},
       "expected": [symlink_base_dir / "my_custom_symlink_awooo"]
     },
     {
@@ -147,8 +146,7 @@ def test_project_symlinks_to(populated_dir):
 
   for test in tests:
     output = sys_read.Project.symlinks_to(**test["kwargs"])
-    assert all(key in test["expected"] for key in output)
-    assert len(output) == len(test["expected"])
+    assert set(output) == set(test["expected"])
 
   with pytest.raises(ValueError):
     sys_read.Project.symlinks_to(symlink_base_dir / "Documents")

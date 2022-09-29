@@ -85,6 +85,14 @@ class Project:
   @staticmethod
   def symlinks_to(path: Path, mpdman_only: bool=True) -> list[Path]:
     "Find all symlinks to the target project path in symlink directory / only ones made by this program"
+    if not Project.is_valid_path(path, project_level_only=True):
+      raise ValueError("Path did not point to valid, top-level project directory")
+
+    return [
+      key for key in 
+      Project.all_symlinks(mpdman_only=mpdman_only)
+      if Path(os.readlink(key)) == path
+    ]
 
 
   @staticmethod
