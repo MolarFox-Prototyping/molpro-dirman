@@ -1,6 +1,5 @@
 # Methods and helpers for interacting passively with the local filesystem
 
-from distutils.command.config import config
 import os
 from pathlib import Path
 from datetime import datetime
@@ -75,8 +74,8 @@ class Project:
       Config.base_symlink_directory().iterdir() if (
         os.path.islink(key) and
         (
-          re.fullmatch(Config.symlink_name_regex(), key.parts[-1]) is not None or
-          not mpdman_only
+          not mpdman_only or
+          re.fullmatch(Config.symlink_name_regex(), key.parts[-1]) is not None
         )
       )
     ]
