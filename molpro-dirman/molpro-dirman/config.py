@@ -34,6 +34,17 @@ class Config:
   def main_project_symlink_name() -> str:
     return symlink_name("", is_main=True)
 
+  
+  @staticmethod
+  def symlink_name_regex(include_main: bool=True, include_aux: bool=True):
+    "Regex matching main and/or aux project symlink names"
+    return r"|".join(
+      s for s in [
+        include_main and r"^current_project$",
+        include_aux and r"^project_[A-Z]+-\d{7}$",
+       ] if s
+    )
+
 
 # PREFIX DESCRIPTIONS
 class Prefixes:
