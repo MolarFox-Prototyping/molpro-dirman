@@ -16,12 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import typer
+
+from pathlib import Path
 from textwrap import dedent
+from rich.table import Table
 
 from . import print, print_json
 from .config import Config, Prefixes
-from .sys_read import Project
+from .sys_read import Project, last_modified
 from .sys_write import symlink_project
 
 app = typer.Typer(invoke_without_command=True)
@@ -30,17 +34,41 @@ app = typer.Typer(invoke_without_command=True)
 @app.command()
 def status():
   "Output mounted project(s), and most recently activated projects"
+  active()
+  print()
+  ls()
 
 
 @app.command()
 def active():
-  "Output currently active project(s)"
+  "Output currently active project(s) only"
+  links = Project.all_symlinks()
+  records = sorted([
+    [last_modified(l), l.parts[-1], Path(os.readlink(l)).parts[-1]]
+    for l in links
+  ])
+
+  table = Table(title="Mounted projects (date_desc")
+  table.add_column("symlink", style="dodger_blue1")
+  table.add_column("project", style="magenta")
+  table.add_column("last_modified", style="bright_black")
+
+  [table.add_row(p[1], p[2], p[0]) for p in records]
+  print(table)
 
 
 @app.command()
 def ls():
-  "List local projects that are ready to be made active"
-  print(Project.list_names())
+  "List active projects, and local projects that are ready to be made active"
+  records = sorted([[last_modified(p), p.parts[-1]] for p in Project.list_paths()], reverse=True)
+
+  table = Table(title="Available Projects (date_desc)")
+  table.add_column("project", style="magenta")
+  table.add_column("last_modified", style="bright_black")
+
+  [table.add_row(p[1], p[0]) for p in records]
+  print(table)
+
 
 @app.command()
 def activate(project_name: str):
