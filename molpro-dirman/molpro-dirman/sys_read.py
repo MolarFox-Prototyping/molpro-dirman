@@ -22,15 +22,15 @@ def extract_filenames(objects: list[Path]) -> list[str]:
   return [obj.parts[-1] for obj in objects]
 
 
-def last_modified(path: Path, recursively_check=True) -> datetime:
+def last_modified(path: Path, recursively_check=True) -> str:
   "Last modified time of a directory, optionally based on all recursive children"
   if not recursively_check: # Just check directory's access / mod time
-    return datetime.utcfromtimestamp(
+    return datetime.fromtimestamp(
       max(path.stat().st_atime, path.stat().st_mtime)
     ).strftime(DATETIME_FORMAT)
 
   # Check directory, subdirectories, and all children for the most recent atime / mtime
-  return datetime.utcfromtimestamp(
+  return datetime.fromtimestamp(
     max(
       max(obj.stat().st_atime, obj.stat().st_mtime) for obj in path.rglob('*')
     )
