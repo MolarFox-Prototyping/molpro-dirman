@@ -26,7 +26,7 @@ from rich.table import Table
 from . import print, print_json
 from .config import Config, Prefixes
 from .sys_read import Project, last_modified
-from .sys_write import symlink_project
+from .sys_write import delete_symlink, symlink_project
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -48,7 +48,7 @@ def active():
     for l in links
   ])
 
-  table = Table(title="Mounted projects (date_desc")
+  table = Table(title="Mounted projects (date_desc)")
   table.add_column("symlink", style="dodger_blue1")
   table.add_column("project", style="magenta")
   table.add_column("last_modified", style="bright_black")
@@ -73,12 +73,17 @@ def ls():
 @app.command()
 def activate(project_name: str):
   "Activate a project"
-  symlink_project(Config.base_project_directory / project_name)
+  symlink_project(Config.base_project_directory() / project_name, is_main=True)
 
 
 @app.command()
 def deactivate():
   "Deactivate an active project"
+  if not Project.active():
+    return print(f"No main project set! No changes made.")
+
+  removed = delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())
+  print(f"Removed main project {removed.parts[-1]} \[{removed}]")
 
 
 @app.command()
@@ -92,7 +97,7 @@ def about():
   print(dedent(
     f"""
     MolarFox Prototyping: Project Directory Manager
-    [italic]Version {Config.version} - 2022[/italic]
+    [italic]Version {Config.version()} - 2022[/italic]
     """
   ))
 
@@ -105,7 +110,7 @@ def prefixes(
   if verbose:
     print_json(data=Prefixes.as_dict())
   else:
-    print_json(data={s: info.short for s, info in Prefixes.definitions.items()})
+    print_json(data={s: info.short for s, info in Prefixes.definitions().items()})
 
 
 @app.callback(invoke_without_command=True)
