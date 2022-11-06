@@ -33,91 +33,91 @@ app = typer.Typer(invoke_without_command=True)
 
 @app.command()
 def status():
-  "Output mounted project(s), and most recently activated projects"
-  active()
-  print()
-  ls()
+    "Output mounted project(s), and most recently activated projects"
+    active()
+    print()
+    ls()
 
 
 @app.command()
 def active():
-  "Output currently active project(s) only"
-  links = Project.all_symlinks()
-  records = sorted([
-    [last_modified(l), l.parts[-1], Path(os.readlink(l)).parts[-1]]
-    for l in links
-  ])
+    "Output currently active project(s) only"
+    links = Project.all_symlinks()
+    records = sorted([
+        [last_modified(l), l.parts[-1], Path(os.readlink(l)).parts[-1]]
+        for l in links
+    ])
 
-  table = Table(title="Mounted projects (date_desc)")
-  table.add_column("symlink", style="dodger_blue1")
-  table.add_column("project", style="magenta")
-  table.add_column("last_modified", style="bright_black")
+    table = Table(title="Mounted projects (date_desc)")
+    table.add_column("symlink", style="dodger_blue1")
+    table.add_column("project", style="magenta")
+    table.add_column("last_modified", style="bright_black")
 
-  [table.add_row(p[1], p[2], p[0]) for p in records]
-  print(table)
+    [table.add_row(p[1], p[2], p[0]) for p in records]
+    print(table)
 
 
 @app.command()
 def ls():
-  "List active projects, and local projects that are ready to be made active"
-  records = sorted([[last_modified(p), p.parts[-1]] for p in Project.list_paths()], reverse=True)
+    "List active projects, and local projects that are ready to be made active"
+    records = sorted([[last_modified(p), p.parts[-1]] for p in Project.list_paths()], reverse=True)
 
-  table = Table(title="Available Projects (date_desc)")
-  table.add_column("project", style="magenta")
-  table.add_column("last_modified", style="bright_black")
+    table = Table(title="Available Projects (date_desc)")
+    table.add_column("project", style="magenta")
+    table.add_column("last_modified", style="bright_black")
 
-  [table.add_row(p[1], p[0]) for p in records]
-  print(table)
+    [table.add_row(p[1], p[0]) for p in records]
+    print(table)
 
 
 @app.command()
 def activate(project_name: str):
-  "Activate a project"
-  symlink_project(Config.base_project_directory() / project_name, is_main=True)
+    "Activate a project"
+    symlink_project(Config.base_project_directory() / project_name, is_main=True)
 
 
 @app.command()
 def deactivate():
-  "Deactivate an active project"
-  if not Project.active():
-    return print(f"No main project set! No changes made.")
+    "Deactivate an active project"
+    if not Project.active():
+        return print(f"No main project set! No changes made.")
 
-  removed = delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())
-  print(f"Removed main project {removed.parts[-1]} \[{removed}]")
+    removed = delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())
+    print(f"Removed main project {removed.parts[-1]} [{removed}]")
 
 
 @app.command()
 def create():
-  "Create a new project"
+    "Create a new project"
 
 
 @app.command()
 def about():
-  "Output some information about molpro-dirman"
-  print(dedent(
-    f"""
+    "Output some information about molpro-dirman"
+    print(dedent(
+        f"""
     MolarFox Prototyping: Project Directory Manager
     [italic]Version {Config.version()} - 2022[/italic]
     """
-  ))
+    ))
 
 
 @app.command()
 def prefixes(
-    verbose: bool=typer.Option(False, help="Display long descriptions for serials")
-  ):
-  "List info about serial prefixes"
-  if verbose:
-    print_json(data=Prefixes.as_dict())
-  else:
-    print_json(data={s: info.short for s, info in Prefixes.definitions().items()})
+        verbose: bool = typer.Option(False, help="Display long descriptions for serials")
+):
+    "List info about serial prefixes"
+    if verbose:
+        print_json(data=Prefixes.as_dict())
+    else:
+        print_json(data={s: info.short for s, info in Prefixes.definitions().items()})
 
 
 @app.callback(invoke_without_command=True)
 def callback(ctx: typer.Context):
-  if ctx.invoked_subcommand is None:  # Print status if no subcommand
-    status()
+    if ctx.invoked_subcommand is None:  # Print status if no subcommand
+        status()
 
 
 if __name__ == "__main__":
-  app()
+    app()
