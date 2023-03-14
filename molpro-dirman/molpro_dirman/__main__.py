@@ -1,6 +1,6 @@
 #!/bin/python3
 
-# molpro-dirman: CLI tool to manage project serials locally
+# molpro_dirman: CLI tool to manage project serials locally
 # Copyright (C) 2022 MolarFox
 
 # This program is free software: you can redistribute it and/or modify
@@ -88,7 +88,7 @@ def create():
 
 @app.command()
 def about():
-  "Output some information about molpro-dirman"
+  "Output some information about molpro_dirman"
   print(dedent(
     f"""
     MolarFox Prototyping: Project Directory Manager

@@ -1,11 +1,10 @@
 [tool.poetry]
-name = "molpro-dirman"
+name = "molpro_dirman"
 version = "0.1.0"
 description = "CLI tool for managing local project directories"
 authors = ["MolarFox <molar@molarfox.io>"]
 license = "gpl-3.0"
 readme = "README.md"
-packages = [{include = "molpro_dirman"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
