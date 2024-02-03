@@ -26,7 +26,7 @@ from rich.table import Table
 from . import print, print_json
 from .config import Config, Prefixes
 from .sys_read import Project, last_modified
-from .sys_write import symlink_project
+from .sys_write import symlink_project, unlink_all, unlink_specific, unlink_main
 from .errors import ProjectSymLinkFailure
 
 app = typer.Typer(invoke_without_command=True)
@@ -78,12 +78,31 @@ def activate(project_name: str):
     symlink_project(Config.base_project_directory() / project_name, is_main=True)
   except ProjectSymLinkFailure as e:
     print(f"[bold red]{e}[/bold red]")
+    print(f"Project: \"{project_name}\"\n")
 
 
 
 @app.command()
-def deactivate():
+def deactivate(project_name: str="main"):
   "Deactivate an active project"
+  removed: list[Path] = []
+  match project_name:
+    case "main":
+      removed = unlink_main()
+    case "all":
+      removed = unlink_all()
+    case _:
+      if not Project.is_valid_path(project_name):
+        print(f"[bold red]Project \"{project_name}\" does not exist[/bold red]")
+      if not len(Project.symlinks_to(Config.base_symlink_directory() / project_name) > 0):
+        print(f"[bold red]Project \"{project_name}\" is not currently mounted[/bold red]")
+      else:
+        removed = unlink_specific(Config.base_symlink_directory() / project_name)
+
+  print("[bold green]Removed paths:[/bold green]")
+  for path in removed:
+    print("  -", path)
+        
 
 
 @app.command()
