@@ -45,21 +45,21 @@ def move_main_to_aux(overwrite_existing: bool=False) -> Path:
   return aux_symlink_path
 
 
-def unlink_all(main_only: bool=False) -> list[Path]:
+def unlink_all() -> list[Path]:
   "Unlinks all symlinks, main and auxiliary - returns list of removed symlinks"
   return [
     delete_symlink(s, mpdman_only=True) for s in Project.all_symlinks(mpdman_only=True)
   ]
 
 
-def unlink_specific(project_path: Path, main_only: bool=False) -> list[Path]:
+def unlink_specific(project_path: Path) -> list[Path]:
   "Unlinks all references to the specified project in symlink directory - returns list of removed symlinks"
   return [delete_symlink(s) for s in Project.symlinks_to(project_path)]
 
 
 def unlink_main() -> list[Path]:
   "Unlinks all references to the current / main project - returns list of size 1"
-  return [delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())]
+  return [delete_symlink(s) for s in Project.symlinks_to(Config.base_symlink_directory() / Config.main_project_symlink_name())]
 
 
 def symlink_project(
