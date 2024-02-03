@@ -58,8 +58,8 @@ def unlink_specific(project_path: Path) -> list[Path]:
 
 
 def unlink_main() -> list[Path]:
-  "Unlinks all references to the current / main project - returns list of size 1"
-  return [delete_symlink(s) for s in Project.symlinks_to(Config.base_symlink_directory() / Config.main_project_symlink_name())]
+  "Unlinks main reference to the current / main project - returns list of size 1"
+  return [delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())]
 
 
 def symlink_project(
