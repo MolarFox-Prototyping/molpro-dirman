@@ -27,7 +27,7 @@ from . import print, print_json
 from .config import Config, Prefixes
 from .sys_read import Project, last_modified
 from .sys_write import symlink_project, unlink_all, unlink_specific, unlink_main
-from .errors import ProjectSymLinkFailure, ProjectAlreadySymLinked
+from .errors import ProjectSymLinkException
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -77,7 +77,7 @@ def activate(project_name: str):
   try:
     symlink_project(Config.base_project_directory() / project_name, is_main=True)
     print(f"[bold green]Linked '{project_name}' at \"{Config.base_project_directory() / project_name}\"[/bold green]")
-  except (ProjectSymLinkFailure, ProjectAlreadySymLinked) as e:
+  except ProjectSymLinkException as e:
     print(f"[bold red]{e}[/bold red]")
 
 
