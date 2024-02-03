@@ -101,11 +101,11 @@ def test_move_main_to_aux_linked_elsewhere(populated_dir, mock_base_directories)
   assert not main_link.exists()
 
 
-def test_unlink_all_main_only(populated_dir, mock_base_directories):
+def test_unlink_main_only(populated_dir, mock_base_directories):
   mock_base_directories(populated_dir)
 
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
-  output = sys_write.unlink_all(main_only=True)
+  output = sys_write.unlink_main()
   links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
   
   assert links_before - links_after == {populated_dir / "home" / "current_project",}
@@ -118,7 +118,7 @@ def test_unlink_all(populated_dir, mock_base_directories):
   mock_base_directories(populated_dir)
 
   links_before = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
-  output = sys_write.unlink_all(main_only=False)
+  output = sys_write.unlink_all()
   links_after = set([k for k in (populated_dir / "home").iterdir() if os.path.islink(k)])
 
   assert len(links_before) - 3 == len(links_after)

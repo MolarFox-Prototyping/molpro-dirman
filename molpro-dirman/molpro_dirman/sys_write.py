@@ -6,22 +6,12 @@ from pathlib import Path
 
 from .config import Config, symlink_name
 from .sys_read import Project
-
-class ProjectSymLinkException(Exception):
-  "General exception during project symlink attempt"
-
-class ProjectSymLinkFailure(ProjectSymLinkException):
-  "Unrecoverable failure during project symlink attempt"
-
-class ProjectSymLinkExists(ProjectSymLinkException):
-  "SymLink Failed because symlink location already exists"
-
-class ProjectAlreadySymLinked(ProjectSymLinkException):
-  "SymLink already exists in the requested configuration"
-
-class ProjectSymlinkedElsewhere(ProjectSymLinkException):
-  "Project is symlinked already, elsewhere in the symlink directory path"
-
+from .errors import (
+  ProjectSymLinkExists, 
+  ProjectSymLinkFailure, 
+  ProjectSymlinkedElsewhere, 
+  ProjectAlreadySymLinked
+)
 
 def delete_symlink(path: Path, mpdman_only=True) -> Path:
   "Safe method to delete only symlinks. Also can perform check to ensure it is an mpdman-created symlink"
@@ -55,11 +45,8 @@ def move_main_to_aux(overwrite_existing: bool=False) -> Path:
   return aux_symlink_path
 
 
-def unlink_all(main_only: bool=False) -> list[Path]:
-  "Unlinks the main project and, optionally, all other aux symlinks - returns list of removed symlinks"
-  if main_only:
-    return [delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())]
-  
+def unlink_all() -> list[Path]:
+  "Unlinks all symlinks, main and auxiliary - returns list of removed symlinks"
   return [
     delete_symlink(s, mpdman_only=True) for s in Project.all_symlinks(mpdman_only=True)
   ]
@@ -68,6 +55,11 @@ def unlink_all(main_only: bool=False) -> list[Path]:
 def unlink_specific(project_path: Path) -> list[Path]:
   "Unlinks all references to the specified project in symlink directory - returns list of removed symlinks"
   return [delete_symlink(s) for s in Project.symlinks_to(project_path)]
+
+
+def unlink_main() -> list[Path]:
+  "Unlinks main reference to the current / main project - returns list of size 1"
+  return [delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())]
 
 
 def symlink_project(
