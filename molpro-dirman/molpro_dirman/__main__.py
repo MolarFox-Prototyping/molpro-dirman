@@ -27,6 +27,7 @@ from . import print, print_json
 from .config import Config, Prefixes
 from .sys_read import Project, last_modified
 from .sys_write import symlink_project
+from .errors import ProjectSymLinkFailure
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -73,7 +74,11 @@ def ls():
 @app.command()
 def activate(project_name: str):
   "Activate a project"
-  symlink_project(Config.base_project_directory / project_name)
+  try:
+    symlink_project(Config.base_project_directory() / project_name, is_main=True)
+  except ProjectSymLinkFailure as e:
+    print(f"[bold red]{e}[/bold red]")
+
 
 
 @app.command()
