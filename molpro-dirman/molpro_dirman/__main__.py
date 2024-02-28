@@ -26,12 +26,7 @@ from rich.table import Table
 from . import print, print_json
 from .config import Config, Prefixes
 from .sys_read import Project, last_modified
-<<<<<<< HEAD
-from .sys_write import symlink_project, unlink_all, unlink_specific, unlink_main
-from .errors import ProjectSymLinkException
-=======
-from .sys_write import delete_symlink, symlink_project
->>>>>>> 6a63433d7f131d25a2084146556595ed6520da0a
+from .sys_write import delete_symlink, symlink_project, unlink_main
 
 app = typer.Typer(invoke_without_command=True)
 
