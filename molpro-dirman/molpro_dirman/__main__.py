@@ -25,8 +25,8 @@ from rich.table import Table
 
 from . import print, print_json
 from .config import Config, Prefixes
-from .sys_read import Project, last_modified
-from .sys_write import delete_symlink, symlink_project, unlink_main
+from .local_read import Project, last_modified
+from .local_write import delete_symlink, symlink_project, unlink_main
 
 app = typer.Typer(invoke_without_command=True)
 

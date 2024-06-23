@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from .config import Config, symlink_name
-from .sys_read import Project
+from .local_read import Project
 from .errors import (
   ProjectSymLinkExists, 
   ProjectSymLinkFailure, 
