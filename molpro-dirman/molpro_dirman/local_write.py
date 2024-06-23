@@ -2,6 +2,7 @@
 
 import os
 import re
+import random
 from pathlib import Path
 
 from .config import Config, symlink_name
@@ -10,7 +11,8 @@ from .errors import (
   ProjectSymLinkExists, 
   ProjectSymLinkFailure, 
   ProjectSymlinkedElsewhere, 
-  ProjectAlreadySymLinked
+  ProjectAlreadySymLinked,
+  ProjectAlreadyExists
 )
 
 def delete_symlink(path: Path, mpdman_only=True) -> Path:
@@ -99,3 +101,24 @@ def symlink_project(
 
   os.symlink(project_path, symlink_path, target_is_directory=True)
   return symlink_path
+
+
+def create_project(
+  prefixes: list[str],
+  title: str,
+  description: str,
+  serial: int = random.randint(0,9_999_999),
+  make_active: bool = True
+):
+  project_name = f"{"".join(sorted(prefixes))}-{str(serial).zfill(7)}"
+  project_path = Config.base_project_directory / project_name
+
+  if Project.is_valid_path(project_path):
+    raise ProjectAlreadyExists(f"Project {project_name} already exists")
+  
+  Config.base_project_directory.mkdir(project_path)
+  (project_path / "README.md").write_text(
+    f"# {title}\n"
+    f"## {project_name}\n\n"
+    f"{description.rstrip}"    
+  )

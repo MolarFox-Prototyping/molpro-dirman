@@ -12,3 +12,6 @@ class ProjectAlreadySymLinked(ProjectSymLinkException):
 
 class ProjectSymlinkedElsewhere(ProjectSymLinkException):
   "Project is symlinked already, elsewhere in the symlink directory path"
+
+class ProjectAlreadyExists(Exception):
+  "Project could not be created as it already exists"
