@@ -95,8 +95,8 @@ def symlink_project(
         else:
             delete_symlink(symlink_path)
 
-  os.symlink(project_path, symlink_path, target_is_directory=True)
-  return symlink_path
+    os.symlink(project_path, symlink_path, target_is_directory=True)
+    return symlink_path
 
 
 def create_project(
