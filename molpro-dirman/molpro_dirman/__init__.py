@@ -1,6 +1,6 @@
 from .config import *
-from .sys_read import *
-from .sys_write import *
+from .local_read import *
+from .local_write import *
 
 core_print = print  # Retain the original print function ptr
 

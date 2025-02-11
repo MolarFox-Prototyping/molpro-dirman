@@ -4,19 +4,19 @@ from unittest.mock import MagicMock
 from datetime import datetime
 from shutil import rmtree
 
-from . import sys_read, config
+from . import local_read, config
 from tests.fixtures import *
 
 def test_ls_dirs_only(populated_dir):
   for pj_key in (populated_dir / "home" / "Projects").iterdir():
     if pj_key.is_dir():
-      output = sys_read.ls_d(pj_key)
+      output = local_read.ls_d(pj_key)
       assert all(key.is_dir() for key in output)
       assert len(output) <= len(list(pj_key.iterdir()))
 
 
 def test_extract_filenames(populated_dir):
-  output = sys_read.extract_filenames(
+  output = local_read.extract_filenames(
     list((populated_dir / "home" / "Projects").iterdir())
   )
 
@@ -27,10 +27,10 @@ def test_extract_filenames(populated_dir):
 
 def test_last_modified(datetimed_dir):
   def run_and_sort(*args, **kwargs) -> list[str]:
-    return sys_read.extract_filenames([
+    return local_read.extract_filenames([
       x[1] for x in sorted([
-        [sys_read.last_modified(key, *args, **kwargs), key] for key in
-        sys_read.ls_d(datetimed_dir / "home" / "Projects")
+        [local_read.last_modified(key, *args, **kwargs), key] for key in
+        local_read.ls_d(datetimed_dir / "home" / "Projects")
       ])
     ])
 
@@ -46,7 +46,7 @@ def test_project_list_paths(populated_dir):
     return_value=populated_dir / "home" / "Projects"
   )
 
-  output = sys_read.Project.list_paths()
+  output = local_read.Project.list_paths()
   assert all(isinstance(k, Path) for k in output)
   for pj_key in (populated_dir / "home" / "Projects").iterdir():
     if pj_key.is_dir():
@@ -58,7 +58,7 @@ def test_project_list_names(populated_dir):
     return_value=populated_dir / "home" / "Projects"
   )
 
-  output = sys_read.Project.list_names()
+  output = local_read.Project.list_names()
   assert all(isinstance(x, str) for x in output)
   for pj_key in (populated_dir / "home" / "Projects").iterdir():
     if pj_key.is_dir():
@@ -73,7 +73,7 @@ def test_project_active_existent(populated_dir):
     return_value=populated_dir / "home"
   )
 
-  assert sys_read.Project.active() == "DO-4256663"
+  assert local_read.Project.active() == "DO-4256663"
 
 
 def test_project_active_non_existent(structured_dir):
@@ -84,9 +84,9 @@ def test_project_active_non_existent(structured_dir):
     return_value=structured_dir / "home"
   )
 
-  assert sys_read.Project.active() is None
+  assert local_read.Project.active() is None
   with pytest.raises(FileNotFoundError):
-    sys_read.Project.active(suppress_errors=False)
+    local_read.Project.active(suppress_errors=False)
 
 
 def test_project_all_symlinks(populated_dir):
@@ -106,12 +106,12 @@ def test_project_all_symlinks(populated_dir):
   ]
 
   for test in tests:
-    output = sys_read.Project.all_symlinks(**test["kwargs"])
+    output = local_read.Project.all_symlinks(**test["kwargs"])
     assert set(key.parts[-1] for key in output) == set(test["expected"])
 
   rmtree(populated_dir / "home")
   os.mkdir(populated_dir / "home")
-  assert sys_read.Project.all_symlinks() == []
+  assert local_read.Project.all_symlinks() == []
 
 
 def test_project_symlinks_to(populated_dir):
@@ -145,11 +145,11 @@ def test_project_symlinks_to(populated_dir):
   ]
 
   for test in tests:
-    output = sys_read.Project.symlinks_to(**test["kwargs"])
+    output = local_read.Project.symlinks_to(**test["kwargs"])
     assert set(output) == set(test["expected"])
 
   with pytest.raises(ValueError):
-    sys_read.Project.symlinks_to(symlink_base_dir / "Documents")
+    local_read.Project.symlinks_to(symlink_base_dir / "Documents")
 
 
 def test_project_is_valid_path(populated_dir):
@@ -159,15 +159,15 @@ def test_project_is_valid_path(populated_dir):
 
   for pj_key in (populated_dir / "home" / "Projects").iterdir():
     if pj_key.is_dir():
-      assert sys_read.Project.is_valid_path(pj_key) is True
-      assert sys_read.Project.is_valid_path(pj_key, project_level_only=True) is True
+      assert local_read.Project.is_valid_path(pj_key) is True
+      assert local_read.Project.is_valid_path(pj_key, project_level_only=True) is True
 
       randfile = random.choice([
         key for key in pj_key.iterdir()
       ])
 
-      assert sys_read.Project.is_valid_path(randfile) is True
-      assert sys_read.Project.is_valid_path(randfile, project_level_only=True) is False
+      assert local_read.Project.is_valid_path(randfile) is True
+      assert local_read.Project.is_valid_path(randfile, project_level_only=True) is False
 
-  assert sys_read.Project.is_valid_path(populated_dir / "home" / "Documents") is False
-  assert sys_read.Project.is_valid_path(populated_dir / "fake_path" / "Projects") is False
+  assert local_read.Project.is_valid_path(populated_dir / "home" / "Documents") is False
+  assert local_read.Project.is_valid_path(populated_dir / "fake_path" / "Projects") is False

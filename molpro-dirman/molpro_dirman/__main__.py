@@ -1,6 +1,6 @@
 #!/bin/python3
 
-# molpro-dirman: CLI tool to manage project serials locally
+# molpro_dirman: CLI tool to manage project serials locally
 # Copyright (C) 2022 MolarFox
 
 # This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ from rich.table import Table
 
 from . import print, print_json
 from .config import Config, Prefixes
-from .sys_read import Project, last_modified
-from .sys_write import delete_symlink, symlink_project
+from .local_read import Project, last_modified
+from .local_write import delete_symlink, symlink_project, unlink_main
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -72,18 +72,36 @@ def ls():
 
 @app.command()
 def activate(project_name: str):
-    "Activate a project"
+  "Activate a project"
+  try:
     symlink_project(Config.base_project_directory() / project_name, is_main=True)
+    print(f"[bold green]Linked '{project_name}' at \"{Config.base_project_directory() / project_name}\"[/bold green]")
+  except ProjectSymLinkException as e:
+    print(f"[bold red]{e}[/bold red]")
+
 
 
 @app.command()
-def deactivate():
-    "Deactivate an active project"
-    if not Project.active():
-        return print(f"No main project set! No changes made.")
+def deactivate(project_name: str=typer.Argument("main")):
+  "Deactivate an active project"
 
-    removed = delete_symlink(Config.base_symlink_directory() / Config.main_project_symlink_name())
-    print(f"Removed main project {removed.parts[-1]} [{removed}]")
+  if not Project.active():
+    return print(f"No main project set! No changes made.")
+
+  full_path = Config.base_project_directory() / project_name
+  removed: list[Path] = []
+  match project_name:
+    case "main":
+      removed = unlink_main()
+    case "all":
+      removed = unlink_all()
+    case _:
+      removed = unlink_specific(full_path)
+
+  print("[bold green]Removed paths:[/bold green]")
+  for path in removed:
+    print("  -", path)
+        
 
 
 @app.command()
@@ -93,9 +111,9 @@ def create():
 
 @app.command()
 def about():
-    "Output some information about molpro-dirman"
-    print(dedent(
-        f"""
+  "Output some information about molpro_dirman"
+  print(dedent(
+    f"""
     MolarFox Prototyping: Project Directory Manager
     [italic]Version {Config.version()} - 2022[/italic]
     """
