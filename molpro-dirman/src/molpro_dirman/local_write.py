@@ -68,8 +68,7 @@ def symlink_project(
         project_path: Path,
         is_main: bool,
         overwrite: bool = False,
-        keep_old_main: bool = False,
-        ignore_existing_symlinks: bool = False
+        keep_old_main: bool = False
 ) -> Path:
     "Safely symlinks a project directory to the specified slot"
     if not Project.is_valid_path(project_path, project_level_only=True):  # Check target path
