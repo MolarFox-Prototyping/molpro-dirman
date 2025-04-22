@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 
 from . import config
 
+# TODO - LOL stochastic fixtures. Fair enough way to flex those new-skill muscles 3 years ago, but these are better being deterministic
 RANDOM_SUBDIRS = [0, 3]
 RANDOM_FILES_PER_DIR = [0, 5]
 RANDOM_README_SIZE = [256, 1024]

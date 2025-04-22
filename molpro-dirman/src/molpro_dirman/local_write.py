@@ -71,7 +71,7 @@ def symlink_project(
         keep_old_main: bool = False
 ) -> Path:
     "Safely symlinks a project directory to the specified slot"
-    if not Project.is_valid_path(project_path, project_level_only=True):  # Check target path
+    if not Project.is_valid_path(project_path):  # Check target path
         if not Project.is_valid_path(project_path):
             raise ProjectSymLinkFailure("Invalid target project - does it exist?")
         raise ProjectSymLinkFailure("Invalid target project - path must be at the root of a project directory")
@@ -103,17 +103,16 @@ def create_project(
   title: str,
   description: str,
   serial: int = random.randint(0,9_999_999),
-  make_active: bool = True
 ):
   project_name = f"{"".join(sorted(prefixes))}-{str(serial).zfill(7)}"
-  project_path = Config.base_project_directory / project_name
+  project_path = Config.base_project_directory() / project_name
 
   if Project.is_valid_path(project_path):
     raise ProjectAlreadyExists(f"Project {project_name} already exists")
   
-  Config.base_project_directory.mkdir(project_path)
+  os.mkdir(project_path)
   (project_path / "README.md").write_text(
     f"# {title}\n"
     f"## {project_name}\n\n"
-    f"{description.rstrip}"    
+    f"{description.rstrip()}"
   )
