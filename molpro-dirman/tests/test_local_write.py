@@ -302,19 +302,18 @@ def test_symlink_project_exists_elsewhere(structured_dir, mock_base_directories)
     return [k for k in (structured_dir / "home").iterdir() if os.path.islink(k)]
 
   assert all_links_in_home() == []
-  local_write.symlink_project(tgt_project, False)
-  assert all_links_in_home() == [aux_link]
+  local_write.symlink_project(tgt_project, True)
+  assert all_links_in_home() == [main_link]
 
-  with pytest.raises(local_write.ProjectSymlinkedElsewhere):
+  with pytest.raises(local_write.ProjectAlreadySymLinked):
     local_write.symlink_project(tgt_project, True)
 
-  assert all_links_in_home() == [aux_link]
-  assert not (main_link).exists()
+  assert all_links_in_home() == [main_link]
 
-  output = local_write.symlink_project(tgt_project, True, ignore_existing_symlinks=True)
+  output = local_write.symlink_project(tgt_project, False)
 
-  assert output == main_link
-  assert set(all_links_in_home()) == {aux_link, main_link}
+  assert output == aux_link
+  assert set(all_links_in_home()) == {main_link, aux_link}
 
   assert all(
     Path(os.readlink(ln)) == tgt_project for ln in 
