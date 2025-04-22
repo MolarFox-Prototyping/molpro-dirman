@@ -208,11 +208,10 @@ def test_symlink_project_invalid_paths(populated_dir, mock_base_directories):
   with pytest.raises(local_write.ProjectSymLinkFailure):
     local_write.symlink_project(populated_dir / "home" / "Documents", False)
 
-  with pytest.raises(local_write.ProjectSymLinkFailure):
+  with pytest.raises(local_write.ProjectSymLinkExists):
     local_write.symlink_project(populated_dir / "home" / "Projects" / "T-1234567" / "README.md", True)
 
-  with pytest.raises(local_write.ProjectSymLinkFailure):
-    local_write.symlink_project(populated_dir / "home" / "Projects" / "T-1234567" / "README.md", False)
+  local_write.symlink_project(populated_dir / "home" / "Projects" / "T-1234567" / "README.md", False)
 
 
 def test_symlink_project_already_created(populated_dir, mock_base_directories):
@@ -302,21 +301,37 @@ def test_symlink_project_exists_elsewhere(structured_dir, mock_base_directories)
     return [k for k in (structured_dir / "home").iterdir() if os.path.islink(k)]
 
   assert all_links_in_home() == []
-  local_write.symlink_project(tgt_project, False)
-  assert all_links_in_home() == [aux_link]
+  local_write.symlink_project(tgt_project, True)
+  assert all_links_in_home() == [main_link]
 
-  with pytest.raises(local_write.ProjectSymlinkedElsewhere):
+  with pytest.raises(local_write.ProjectAlreadySymLinked):
     local_write.symlink_project(tgt_project, True)
 
-  assert all_links_in_home() == [aux_link]
-  assert not (main_link).exists()
+  assert all_links_in_home() == [main_link]
 
-  output = local_write.symlink_project(tgt_project, True, ignore_existing_symlinks=True)
+  output = local_write.symlink_project(tgt_project, False)
 
-  assert output == main_link
-  assert set(all_links_in_home()) == {aux_link, main_link}
+  assert output == aux_link
+  assert set(all_links_in_home()) == {main_link, aux_link}
 
   assert all(
     Path(os.readlink(ln)) == tgt_project for ln in 
     all_links_in_home()
   )
+
+def test_create_project(structured_dir, mock_base_directories):
+  def projects_in_local(path: Path) -> list[str]:
+    return [k.parts[-1] for k in (path / "home" / "Projects").iterdir() if k.is_dir()]
+
+  mock_base_directories(structured_dir)
+  assert "S-1234567" not in projects_in_local(structured_dir)
+  local_write.create_project(['S'], "A test project", "Wow! A description", serial=1234567)
+  assert "S-1234567" in projects_in_local(structured_dir)
+
+  assert open(structured_dir / "home" / "Projects" / "S-1234567" / "README.md", "r").read() == "# A test project\n## S-1234567\n\nWow! A description"
+
+
+def test_create_project_already_exists(structured_dir, mock_base_directories):
+  mock_base_directories(structured_dir)
+  with pytest.raises(local_write.ProjectAlreadyExists):
+    local_write.create_project(['T'], "A pre-existing project", "This should fail, huh?", serial=1234567)
