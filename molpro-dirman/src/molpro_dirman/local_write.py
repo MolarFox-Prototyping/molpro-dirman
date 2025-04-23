@@ -104,7 +104,7 @@ def create_project(
   title: str,
   description: str,
   serial: int = random.randint(0,9_999_999),
-):
+) -> Path:
   project_name = f"{"".join(sorted(prefixes))}-{str(serial).zfill(7)}"
   project_path = Config.base_project_directory() / project_name
 
@@ -117,3 +117,4 @@ def create_project(
     f"## {project_name}\n\n"
     f"{description.rstrip()}"
   )
+  return project_path
