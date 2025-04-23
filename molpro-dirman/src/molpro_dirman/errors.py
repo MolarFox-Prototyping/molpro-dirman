@@ -15,3 +15,6 @@ class ProjectSymlinkedElsewhere(ProjectSymLinkException):
 
 class ProjectAlreadyExists(Exception):
   "Project could not be created as it already exists"
+
+class SerialGenerationError(Exception):
+  "An error occurred whilst attempting to generate a unique serial"

@@ -319,14 +319,17 @@ def test_symlink_project_exists_elsewhere(structured_dir, mock_base_directories)
     all_links_in_home()
   )
 
+
 def test_create_project(structured_dir, mock_base_directories):
   def projects_in_local(path: Path) -> list[str]:
     return [k.parts[-1] for k in (path / "home" / "Projects").iterdir() if k.is_dir()]
 
   mock_base_directories(structured_dir)
   assert "S-1234567" not in projects_in_local(structured_dir)
-  local_write.create_project(['S'], "A test project", "Wow! A description", serial=1234567)
+  new_project_path = local_write.create_project(['S'], "A test project", "Wow! A description", serial=1234567)
   assert "S-1234567" in projects_in_local(structured_dir)
+
+  assert new_project_path == structured_dir / "home" / "Projects" / "S-1234567"
 
   assert open(structured_dir / "home" / "Projects" / "S-1234567" / "README.md", "r").read() == "# A test project\n## S-1234567\n\nWow! A description"
 

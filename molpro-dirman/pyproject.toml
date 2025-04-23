@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "molpro_dirman"
-version = "0.1.1"
+version = "0.1.2"
 description = "CLI tool for managing local project directories"
 authors = ["MolarFox <molar@molarfox.io>"]
 license = "gpl-3.0"
@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.10"
 typer = "^0.6.1"
 rich = "^12.5.1"
+inquirerpy = "^0.3.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"
