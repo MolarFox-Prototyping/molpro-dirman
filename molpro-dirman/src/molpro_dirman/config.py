@@ -17,7 +17,7 @@ class Config:
 
     @staticmethod
     def version() -> str:
-        return "0.1.0"
+        return "0.1.2"
 
     @staticmethod
     def base_project_directory() -> Path:

@@ -4,8 +4,9 @@ import os
 import re
 import random
 from pathlib import Path
+from typing import Literal
 
-from .config import Config, symlink_name
+from .config import Config, symlink_name, Prefixes
 from .local_read import Project
 from .errors import (
   ProjectSymLinkExists, 
@@ -99,7 +100,7 @@ def symlink_project(
 
 
 def create_project(
-  prefixes: list[str],
+  prefixes: list[Literal[Prefixes.definitions().keys()]],
   title: str,
   description: str,
   serial: int = random.randint(0,9_999_999),

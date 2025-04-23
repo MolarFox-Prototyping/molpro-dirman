@@ -1,7 +1,7 @@
 #!/bin/python3
 
 # molpro_dirman: CLI tool to manage project serials locally
-# Copyright (C) 2022 MolarFox
+# Copyright (C) 2022 MolarFox Prototyping
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ def deactivate(project_name: str=typer.Argument("main")):
 
 
 @app.command()
-def create():
+def create(prefixes: list[str], title: str, description: str):
     "Create a new project"
 
 
@@ -115,7 +115,7 @@ def about():
   print(dedent(
     f"""
     MolarFox Prototyping: Project Directory Manager
-    [italic]Version {Config.version()} - 2022[/italic]
+    [italic]Version {Config.version()} - 2025[/italic]
     """
     ))
 
