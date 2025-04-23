@@ -4,7 +4,7 @@ import os
 import re
 import random
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from .config import Config, symlink_name, Prefixes
 from .local_read import Project
@@ -13,51 +13,54 @@ from .errors import (
   ProjectSymLinkFailure, 
   ProjectSymlinkedElsewhere, 
   ProjectAlreadySymLinked,
-  ProjectAlreadyExists
+  ProjectAlreadyExists,
+  SerialGenerationError
 )
 
-def delete_symlink(path: Path, mpdman_only=True) -> Path:
-    "Safe method to delete only symlinks, also can perform check to ensure it is an mpdman-created symlink"
-    if not os.path.islink(path):
-        raise ValueError("Delete symlink called on a file object that is not a symlink")
-    if mpdman_only and not Config.matches_symlink_regex(path):
-        raise ValueError("Symlink does not match project symlink regex")
+MAX_SERIAL_GENERATION_ATTEMPTS = 100  # Prevents possible long-running loops for serial gen
 
-    os.remove(path)
-    return path
+def delete_symlink(path: Path, mpdman_only=True) -> Path:
+  "Safe method to delete only symlinks, also can perform check to ensure it is an mpdman-created symlink"
+  if not os.path.islink(path):
+    raise ValueError("Delete symlink called on a file object that is not a symlink")
+  if mpdman_only and not Config.matches_symlink_regex(path):
+    raise ValueError("Symlink does not match project symlink regex")
+
+  os.remove(path)
+  return path
 
 
 def move_main_to_aux(overwrite_existing: bool = False) -> Path:
-    "Moves the current main project (if any) to its aux symlink point, returns aux symlink path"
-    main_symlink_path = Config.base_symlink_directory() / Config.main_project_symlink_name()
-    aux_symlink_path = Config.base_symlink_directory() / symlink_name(
-        Project.active(suppress_errors=False), is_main=False
-    )
+  "Moves the current main project (if any) to its aux symlink point, returns aux symlink path"
+  main_symlink_path = Config.base_symlink_directory() / Config.main_project_symlink_name()
+  aux_symlink_path = Config.base_symlink_directory() / symlink_name(
+    Project.active(suppress_errors=False), is_main=False
+  )
 
-    # Check if the auxiliary path already exists
-    if aux_symlink_path.exists():
-        if os.readlink(aux_symlink_path) == os.readlink(main_symlink_path):
-            delete_symlink(main_symlink_path)
-            return aux_symlink_path
-        elif overwrite_existing:
-            delete_symlink(aux_symlink_path)
-        else:
-            raise ProjectSymLinkExists("Aux symlink already exists, and does not point to expected destination")
+  # Check if the auxiliary path already exists
+  if aux_symlink_path.exists():
+    if os.readlink(aux_symlink_path) == os.readlink(main_symlink_path):
+      delete_symlink(main_symlink_path)
+      return aux_symlink_path
+    elif overwrite_existing:
+      delete_symlink(aux_symlink_path)
+    else:
+      raise ProjectSymLinkExists("Aux symlink already exists, and does not point to expected destination")
 
-    os.rename(main_symlink_path, aux_symlink_path)
-    return aux_symlink_path
+  os.rename(main_symlink_path, aux_symlink_path)
+  return aux_symlink_path
 
 
 def unlink_all() -> list[Path]:
   "Unlinks all symlinks, main and auxiliary - returns list of removed symlinks"
   return [
-    delete_symlink(s, mpdman_only=True) for s in Project.all_symlinks(mpdman_only=True)
+  delete_symlink(s, mpdman_only=True) for s in Project.all_symlinks(mpdman_only=True)
   ]
 
 
 def unlink_specific(project_path: Path) -> list[Path]:
-    "Unlinks all references to the specified project in symlink directory - returns list of removed symlinks"
-    return [delete_symlink(s) for s in Project.symlinks_to(project_path)]
+  "Unlinks all references to the specified project in symlink directory - returns list of removed symlinks"
+  return [delete_symlink(s) for s in Project.symlinks_to(project_path)]
 
 
 def unlink_main() -> list[Path]:
@@ -66,45 +69,58 @@ def unlink_main() -> list[Path]:
 
 
 def symlink_project(
-        project_path: Path,
-        is_main: bool,
-        overwrite: bool = False,
-        keep_old_main: bool = False
+    project_path: Path,
+    is_main: bool,
+    overwrite: bool = False,
+    keep_old_main: bool = False
 ) -> Path:
-    "Safely symlinks a project directory to the specified slot"
-    if not Project.is_valid_path(project_path):  # Check target path
-        if not Project.is_valid_path(project_path):
-            raise ProjectSymLinkFailure("Invalid target project - does it exist?")
-        raise ProjectSymLinkFailure("Invalid target project - path must be at the root of a project directory")
+  "Safely symlinks a project directory to the specified slot"
+  if not Project.is_valid_path(project_path):  # Check target path
+    if not Project.is_valid_path(project_path):
+      raise ProjectSymLinkFailure("Invalid target project - does it exist?")
+    raise ProjectSymLinkFailure("Invalid target project - path must be at the root of a project directory")
 
-    # Check if need to overwrite path
-    symlink_path = Config.base_symlink_directory() / symlink_name(project_path.parts[-1], is_main=is_main)
-    if (symlink_path).exists():
+  # Check if need to overwrite path
+  symlink_path = Config.base_symlink_directory() / symlink_name(project_path.parts[-1], is_main=is_main)
+  if (symlink_path).exists():
 
-        # Check if already symlinked as requested
-        if Path(os.readlink(symlink_path)) == project_path:
-            raise ProjectAlreadySymLinked(f"Project {project_path.parts[-1]} already symlinked at {symlink_path}")
+    # Check if already symlinked as requested
+    if Path(os.readlink(symlink_path)) == project_path:
+      raise ProjectAlreadySymLinked(f"Project {project_path.parts[-1]} already symlinked at {symlink_path}")
 
-        # Don't modify existing symlink unless overwrite mode enabled
-        if not overwrite:
-            raise ProjectSymLinkExists("The requested symlink point already exists")
+    # Don't modify existing symlink unless overwrite mode enabled
+    if not overwrite:
+      raise ProjectSymLinkExists("The requested symlink point already exists")
 
-        # Move / delete the existing symlink
-        if is_main and keep_old_main:
-            move_main_to_aux()
-        else:
-            delete_symlink(symlink_path)
+    # Move / delete the existing symlink
+    if is_main and keep_old_main:
+      move_main_to_aux()
+    else:
+      delete_symlink(symlink_path)
 
-    os.symlink(project_path, symlink_path, target_is_directory=True)
-    return symlink_path
+  os.symlink(project_path, symlink_path, target_is_directory=True)
+  return symlink_path
+
+
+def generate_random_serial(prefixes: list[Literal[Prefixes.definitions().keys()]]) -> int:
+  prefix = "".join(sorted(prefixes))
+  for _ in range(MAX_SERIAL_GENERATION_ATTEMPTS):
+    serial = random.randint(0,9_999_999)
+    if not Project.is_valid_path(Config.base_project_directory() / f"{prefix}-{str(serial).zfill(7)}"):
+      return serial
+  
+  raise SerialGenerationError(f"Serial generation failed after {MAX_SERIAL_GENERATION_ATTEMPTS} attempts were exhausted")
 
 
 def create_project(
   prefixes: list[Literal[Prefixes.definitions().keys()]],
   title: str,
   description: str,
-  serial: int = random.randint(0,9_999_999),
+  serial: Optional[int]
 ) -> Path:
+  if not serial:
+    serial = generate_random_serial(prefixes)
+
   project_name = f"{"".join(sorted(prefixes))}-{str(serial).zfill(7)}"
   project_path = Config.base_project_directory() / project_name
 
@@ -114,7 +130,7 @@ def create_project(
   os.mkdir(project_path)
   (project_path / "README.md").write_text(
     f"# {title}\n"
-    f"## {project_name}\n\n"
+    f"## {project_name}\n\n\n"
     f"{description.rstrip()}"
   )
   return project_path

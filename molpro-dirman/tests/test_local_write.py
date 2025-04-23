@@ -319,6 +319,7 @@ def test_symlink_project_exists_elsewhere(structured_dir, mock_base_directories)
     all_links_in_home()
   )
 
+
 def test_create_project(structured_dir, mock_base_directories):
   def projects_in_local(path: Path) -> list[str]:
     return [k.parts[-1] for k in (path / "home" / "Projects").iterdir() if k.is_dir()]

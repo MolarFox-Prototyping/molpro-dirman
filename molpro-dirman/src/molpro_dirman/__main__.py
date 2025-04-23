@@ -18,15 +18,18 @@
 
 import os
 import typer
+from InquirerPy import inquirer
 
 from pathlib import Path
 from textwrap import dedent
 from rich.table import Table
+from typing import Optional
 
 from . import print, print_json
 from .config import Config, Prefixes
 from .local_read import Project, last_modified
-from .local_write import delete_symlink, symlink_project, unlink_main
+from .local_write import delete_symlink, symlink_project, unlink_main, create_project
+from .errors import ProjectSymLinkException
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -101,12 +104,43 @@ def deactivate(project_name: str=typer.Argument("main")):
   print("[bold green]Removed paths:[/bold green]")
   for path in removed:
     print("  -", path)
-        
 
 
 @app.command()
-def create(prefixes: list[str], title: str, description: str):
+def create(
+    prefixes: list[str]=[],
+    title: str=typer.Option(None, prompt="Project title"),
+    description: str="",
+    serial: Optional[int]=None
+  ):
     "Create a new project"
+
+    # Prompt for prefixes
+    if not prefixes:
+      prefixes = inquirer.checkbox(
+        message="Select prefixes relevant to the new project:",
+        choices=[{"value":k, "name": f"{k} - {v.short}"} for k, v in Prefixes.definitions().items()],
+      ).execute()
+
+    # Optionally prompt with editor for description to be edited
+    if not description:
+      if typer.confirm("Edit project description?", default=True):
+        description = typer.edit() or ""
+
+    # Validate prefixes were defined
+    if not prefixes:
+      print("[bold red]No prefixes were specified! Aborting[/bold red]")
+      return
+    
+    # Create project
+    project_path = create_project(prefixes, title, description, serial)
+    project_name = project_path.parts[-1]
+
+    print(f"[green]Created new project [bold][{project_name}][/bold][/green]")
+
+    # Make that the new main
+    unlink_main()
+    activate(project_name)
 
 
 @app.command()
